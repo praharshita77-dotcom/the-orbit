@@ -1,0 +1,1739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Study Ops</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.17.0/katex.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.17.0/katex.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --ink: #1b2430;
+    --parchment: #efe7d8;
+    --brass: #c9a34e;
+    --crimson: #b23a48;
+    --sage: #4e8c82;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ink); color: var(--parchment); font-family: 'Inter', sans-serif; padding: 26px 18px 60px; }
+  .app { max-width: 780px; margin: 0 auto; }
+  h1, h2, h3 { font-family: 'Fraunces', serif; margin: 0; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(201,163,78,0.75); margin-bottom: 6px; }
+  .sub { color: rgba(239,231,216,0.6); max-width: 46em; margin-top: 8px; font-size: 0.92rem; }
+  .muted { color: rgba(239,231,216,0.4); }
+  .hint { font-size: 0.85rem; color: rgba(239,231,216,0.55); margin: 6px 0 14px; }
+
+  .scoreboard-bar { border: 1px solid rgba(201,163,78,0.3); background: rgba(0,0,0,0.15); border-radius: 18px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin: 18px 0 8px; }
+  .level-block { display: flex; align-items: center; gap: 14px; }
+  .level-badge-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .level-badge { width: 52px; height: 52px; border-radius: 50%; border: 3px solid var(--brass); background: linear-gradient(to bottom, var(--parchment), rgba(239,231,216,0.85)); color: var(--ink); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 700; flex-shrink: 0; }
+  .level-caption { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(201,163,78,0.85); max-width: 92px; text-align:center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .xp-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(201,163,78,0.7); margin-bottom: 4px; }
+  .xp-counter { display: inline-flex; gap: 2px; background: var(--ink); border: 2px solid rgba(201,163,78,0.6); border-radius: 6px; padding: 6px 10px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5); }
+  .digit { position: relative; height: 1em; width: 0.62em; overflow: hidden; font-family: 'IBM Plex Mono', monospace; font-size: 1.6rem; color: var(--brass); }
+  .digit-inner { position: absolute; left: 0; top: 0; transition: transform 0.6s cubic-bezier(.2,.8,.2,1); }
+  .digit-num { height: 1em; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .streak-block { display: flex; align-items: center; gap: 8px; }
+  .flame { font-size: 1.3rem; transition: opacity 0.4s; }
+  .streak-num { font-family: 'Fraunces', serif; font-size: 1.2rem; line-height: 1; }
+  .streak-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(239,231,216,0.6); }
+  .level-progress-track { height: 6px; border-radius: 6px; background: rgba(239,231,216,0.08); overflow: hidden; }
+  .level-progress-fill { height: 100%; background: linear-gradient(to right, var(--brass), var(--sage)); transition: width 0.7s ease; width: 0%; }
+  .level-progress-caption { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: rgba(239,231,216,0.5); margin: 6px 0 0; }
+
+  .tab-nav { display:flex; gap:8px; margin: 18px 0 20px; flex-wrap: wrap; }
+  .tab-btn { background: transparent; border: 1px solid rgba(239,231,216,0.15); color: rgba(239,231,216,0.6); border-radius: 999px; padding: 8px 16px; font-size: 0.85rem; cursor: pointer; font-family:'Inter',sans-serif; transition: all 0.2s; }
+  .tab-btn.active { background: var(--brass); color: var(--ink); border-color: var(--brass); font-weight:600; }
+  .tab-btn:hover:not(.active) { border-color: rgba(201,163,78,0.4); color: var(--parchment); }
+
+  .upload-panel { border: 2px dashed rgba(239,231,216,0.2); background: rgba(0,0,0,0.12); border-radius: 18px; padding: 20px; }
+  input[type="text"], input, textarea, select { width: 100%; background: transparent; border: 1px solid rgba(239,231,216,0.2); border-radius: 10px; color: var(--parchment); padding: 9px 12px; font-family: 'Inter', sans-serif; font-size: 0.9rem; }
+  textarea { resize: vertical; margin-top: 10px; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--brass); }
+  select option { background: var(--ink); }
+  .upload-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .file-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(201,163,78,0.4); color: var(--brass); border-radius: 999px; padding: 9px 15px; font-size: 0.82rem; cursor: pointer; transition: background 0.2s; background: transparent; }
+  .file-btn:hover { background: rgba(201,163,78,0.1); }
+  .file-btn.disabled { opacity: 0.35; cursor: not-allowed; }
+  .file-btn.disabled:hover { background: transparent; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 6px; border: none; background: var(--brass); color: var(--ink); font-weight: 600; border-radius: 999px; padding: 10px 20px; font-size: 0.88rem; cursor: pointer; transition: background 0.2s; }
+  .btn-primary:hover { background: #d8b869; }
+  .btn-primary:disabled { opacity: 0.5; cursor: default; }
+  .error { color: var(--crimson); font-size: 0.85rem; margin-top: 8px; }
+
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin: 28px 0 12px; }
+  .count { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: rgba(239,231,216,0.4); }
+  .notebook-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .empty-note { border: 1px dashed rgba(239,231,216,0.15); border-radius: 14px; padding: 26px; text-align: center; color: rgba(239,231,216,0.35); }
+  .notebook-card { position: relative; background: var(--parchment); color: var(--ink); border-radius: 3px; padding: 16px; box-shadow: 3px 4px 0 rgba(27,36,48,0.15); cursor: pointer; transform: rotate(-0.4deg); transition: transform 0.2s, box-shadow 0.2s; }
+  .notebook-card:hover { transform: translateY(-3px) rotate(0deg); box-shadow: 5px 8px 0 rgba(27,36,48,0.2); }
+  .notebook-card.nb-pending { cursor: default; opacity: 0.8; }
+  .notebook-card .nb-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(27,36,48,0.55); margin-bottom: 6px; }
+  .notebook-card h3 { font-size: 1rem; margin-bottom: 5px; }
+  .notebook-card p { font-size: 0.8rem; color: rgba(27,36,48,0.6); margin: 0; }
+  .nb-delete { position: absolute; top: 8px; right: 8px; border: none; background: transparent; color: rgba(27,36,48,0.3); cursor: pointer; font-size: 0.85rem; padding: 2px 6px; border-radius: 4px; }
+  .nb-delete:hover { color: var(--crimson); background: rgba(178,58,72,0.1); }
+
+  .build-bar { margin: 18px 0; }
+  .plan-card { background: rgba(0,0,0,0.15); border:1px solid rgba(201,163,78,0.2); border-radius:16px; padding:18px; }
+  .plan-item { margin-bottom: 12px; }
+  .plan-item h3 { font-size:1rem; margin-bottom:4px; }
+  .plan-item p { font-size: 0.85rem; color: rgba(239,231,216,0.65); margin: 0; }
+
+  .subject-pills { display:flex; gap:8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .pill { background: transparent; border: 1px solid rgba(239,231,216,0.15); color: rgba(239,231,216,0.6); border-radius: 999px; padding: 6px 14px; font-size: 0.8rem; cursor:pointer; }
+  .pill.active { background: rgba(201,163,78,0.15); border-color: var(--brass); color: var(--brass); }
+
+  .quiz-card { border: 1px solid rgba(201,163,78,0.3); background: rgba(0,0,0,0.18); border-radius: 18px; padding: 22px; }
+  .quiz-topline { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(239,231,216,0.5); margin-bottom: 12px; }
+  .segment-label { margin: 2px 0 10px; }
+  .narration-text { font-size: 0.95rem; line-height: 1.65; color: rgba(239,231,216,0.85); margin: 0 0 16px; }
+  .narration-controls { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 16px; }
+  .narration-controls select { width: auto; max-width: 230px; }
+
+  .segment-dots { display:flex; gap:6px; margin-bottom: 14px; }
+  .segment-dot { width: 9px; height: 9px; border-radius: 50%; background: rgba(239,231,216,0.15); }
+  .segment-dot.done { background: var(--sage); }
+  .segment-dot.current { background: var(--brass); }
+
+  .board { background: radial-gradient(ellipse at top, rgba(78,140,130,0.08), transparent 65%), rgba(0,0,0,0.28); border: 1px solid rgba(201,163,78,0.25); border-radius: 14px; padding: 22px 20px; min-height: 150px; margin-bottom: 16px; display:flex; flex-direction:column; justify-content:center; gap: 12px; }
+  .board-visual:empty { display: none; }
+  .board-placeholder { text-align:center; color: rgba(239,231,216,0.35); font-size: 0.88rem; }
+  .board-bullet { display:flex; align-items:flex-start; gap: 10px; opacity: 0; transform: translateY(8px); animation: bulletIn 0.5s ease forwards; }
+  .board-bullet .mark { color: var(--brass); font-size: 1rem; line-height:1.4; flex-shrink:0; }
+  .board-bullet .text { font-size: 1rem; line-height: 1.5; color: var(--parchment); border-bottom: 2px solid rgba(201,163,78,0.35); padding-bottom: 3px; }
+  @keyframes bulletIn { to { opacity: 1; transform: translateY(0); } }
+  .board-bullets { display:flex; flex-direction:column; gap:10px; }
+  .graph-svg, .motion-svg { width: 100%; height: auto; display:block; }
+  .graph-axis-label { font-size: 9px; fill: rgba(239,231,216,0.5); font-family: 'IBM Plex Mono', monospace; }
+  .motion-caption { text-align:center; font-size: 0.85rem; color: rgba(239,231,216,0.75); margin-top: 6px; min-height: 1.3em; }
+  .motion-summary { text-align:center; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--brass); margin-top: 6px; }
+
+  .timeline-svg { width: 100%; height: auto; display:block; }
+  .timeline-pt { transform-box: fill-box; transform-origin: center; }
+  .timeline-pt.current { animation: starPulse 1.6s infinite ease-in-out; }
+  .cycle-svg { width: 58%; max-width: 190px; height: auto; display:block; margin: 0 auto; }
+  .flow-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; justify-content:center; }
+  .flow-step { background: rgba(201,163,78,0.1); border: 1px solid rgba(201,163,78,0.3); border-radius: 10px; padding: 8px 12px; font-size: 0.82rem; display:flex; flex-direction:column; gap:2px; max-width: 150px; }
+  .flow-step strong { color: var(--brass); font-size: 0.82rem; }
+  .flow-step span { color: rgba(239,231,216,0.6); font-size: 0.75rem; }
+  .flow-arrow { color: rgba(201,163,78,0.5); font-size: 1.1rem; }
+  .cmp-table { display:grid; gap: 6px 10px; align-items:center; }
+  .cmp-head { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; text-transform:uppercase; letter-spacing:0.05em; color: var(--brass); }
+  .cmp-label { font-size: 0.82rem; color: rgba(239,231,216,0.6); }
+  .cmp-val { font-size: 0.85rem; color: var(--parchment); background: rgba(239,231,216,0.04); border-radius: 6px; padding: 4px 8px; }
+
+  .equation-display { text-align:center; padding: 10px 4px; color: var(--parchment); }
+  .equation-display .katex { color: var(--parchment); font-size: 1.3em; }
+  .molecule-svg { width: 62%; max-width: 210px; height: auto; display:block; margin: 0 auto; }
+  .molecule-label { font-size: 11px; fill: #efe7d8; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .venn-svg { width: 72%; max-width: 220px; height: auto; display:block; margin: 0 auto; }
+  .venn-label { font-size: 11px; }
+
+
+  .quiz-question { font-family: 'Fraunces', serif; font-size: 1.15rem; margin: 0 0 16px; }
+  .choices { display: grid; gap: 9px; }
+  .choice { display: block; width: 100%; text-align: left; border: 1px solid rgba(239,231,216,0.15); background: transparent; color: rgba(239,231,216,0.85); border-radius: 12px; padding: 11px 15px; font-size: 0.9rem; cursor: pointer; transition: border-color 0.2s; font-family: 'Inter', sans-serif; }
+  .choice:hover:not(:disabled) { border-color: rgba(201,163,78,0.5); }
+  .choice.correct { border-color: var(--sage); background: rgba(78,140,130,0.12); color: var(--sage); }
+  .choice.wrong { border-color: var(--crimson); background: rgba(178,58,72,0.12); color: var(--crimson); }
+  .feedback { margin-top: 14px; background: rgba(239,231,216,0.05); border-radius: 10px; padding: 12px 14px; font-size: 0.84rem; color: rgba(239,231,216,0.7); }
+  .xp-gain { font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(201,163,78,0.8); margin-bottom: 4px; }
+  .quiz-card .btn-primary { margin-top: 14px; }
+  .quiz-card.result { text-align: center; }
+  .result-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(201,163,78,0.7); }
+  .result-pct { font-family: 'Fraunces', serif; font-size: 2.6rem; font-weight: 600; margin: 6px 0; }
+
+  .checklist { list-style:none; padding:0; margin: 10px 0 0; display:grid; gap:8px; }
+  .checklist li { display:flex; align-items:center; gap:10px; font-size:0.86rem; padding: 9px 11px; border-radius:8px; background: rgba(239,231,216,0.04); }
+  .checklist li.done { opacity: 0.65; }
+  .checklist li.done .tt-label { text-decoration: line-through; }
+  .checklist .check { width: 18px; text-align:center; color: var(--sage); flex-shrink:0; }
+  .checklist li:not(.done) .check { color: rgba(239,231,216,0.3); }
+  .tt-label { flex:1; }
+  .tt-pts { font-family:'IBM Plex Mono',monospace; font-size:0.66rem; color: rgba(201,163,78,0.8); white-space: nowrap; }
+  .timetable-card { background: rgba(0,0,0,0.15); border:1px solid rgba(239,231,216,0.1); border-radius:14px; padding:16px; margin-bottom:14px; }
+
+  .orbit-path { position:relative; padding: 18px 8px; background: radial-gradient(ellipse at top, rgba(120,90,190,0.15), transparent 60%), rgba(0,0,0,0.22); border-radius:18px; border:1px solid rgba(201,163,78,0.2); }
+  .orbit-path::before { content:''; position:absolute; left:50%; top:20px; bottom:20px; width:2px; background-image: repeating-linear-gradient(to bottom, rgba(201,163,78,0.35) 0 6px, transparent 6px 14px); transform: translateX(-50%); }
+  .path-stop { display:flex; position:relative; margin: 4px 0; }
+  .path-stop.stop-left { justify-content:flex-start; }
+  .path-stop.stop-right { justify-content:flex-end; }
+  .const-node { width: 44%; max-width:150px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; background: rgba(0,0,0,0.28); border: 1px solid rgba(201,163,78,0.15); border-radius:14px; padding:12px 8px; position:relative; z-index:1; }
+  .const-node.locked { opacity:0.45; }
+  .const-node.current { border-color: var(--brass); box-shadow: 0 0 14px rgba(201,163,78,0.3); }
+  .const-svg { width: 72%; height: auto; display:block; margin: 0 auto; }
+  .const-star-pt { transform-box: fill-box; transform-origin: center; }
+  .const-star-pt.current { animation: starPulse 1.6s infinite ease-in-out; }
+  @keyframes starPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.8); } }
+  .const-name { font-family:'Fraunces',serif; font-size:0.74rem; }
+  .const-threshold { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; color: rgba(239,231,216,0.4); }
+
+  .profile-form { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin: 10px 0; }
+  .profile-form input, .profile-form select { width: auto; flex: 1; min-width: 150px; }
+
+  .lb-tabs { display:flex; gap:8px; margin: 10px 0 14px; }
+  .lb-list { list-style:none; padding:0; margin:0; display:grid; gap:6px; }
+  .lb-list li { display:flex; align-items:center; gap:12px; padding: 9px 12px; border-radius:10px; background: rgba(239,231,216,0.04); font-size:0.84rem; }
+  .lb-list li.me { border: 1px solid var(--brass); background: rgba(201,163,78,0.1); }
+  .lb-rank { font-family:'IBM Plex Mono',monospace; color: rgba(201,163,78,0.7); width: 30px; flex-shrink:0; }
+  .lb-name { flex:1; }
+  .lb-country { color: rgba(239,231,216,0.4); font-size:0.72rem; }
+  .lb-pts { font-family:'IBM Plex Mono',monospace; color: var(--brass); white-space:nowrap; }
+
+  .badge-toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--brass); color: var(--ink); font-weight: 600; font-family: 'Fraunces', serif; padding: 12px 22px; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); opacity: 0; transition: all 0.4s ease; pointer-events: none; z-index: 50; font-size: 0.92rem; text-align:center; }
+  .storage-toast { background: rgba(27,36,48,0.95); color: var(--parchment); border: 1px solid rgba(201,163,78,0.4); border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.82rem; max-width: 340px; }
+  .badge-toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="eyebrow">STUDY OPS</div>
+    <h1>Study Ops</h1>
+    <p class="sub">A structured lesson for whatever you're studying today — guided walkthroughs, practice quizzes, and steady progress you can see.</p>
+
+    <div class="scoreboard-bar">
+      <div class="level-block">
+        <div class="level-badge-wrap">
+          <div class="level-badge" id="level-badge">1</div>
+          <div class="level-caption" id="level-caption">Ursa Minor</div>
+        </div>
+        <div>
+          <div class="xp-label">Total stars</div>
+          <div class="xp-counter" id="xp-counter">
+            <div class="digit" id="digit-0"><div class="digit-inner"></div></div>
+            <div class="digit" id="digit-1"><div class="digit-inner"></div></div>
+            <div class="digit" id="digit-2"><div class="digit-inner"></div></div>
+            <div class="digit" id="digit-3"><div class="digit-inner"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="streak-block">
+        <span class="flame" id="flame-icon">🔥</span>
+        <div>
+          <div class="streak-num" id="streak-num">0</div>
+          <div class="streak-label">day streak</div>
+        </div>
+      </div>
+    </div>
+    <div class="level-progress-track"><div class="level-progress-fill" id="level-progress-fill"></div></div>
+    <p class="level-progress-caption" id="level-progress-caption">0 / 120 stars to Lyra</p>
+
+    <div class="tab-nav" id="tab-nav">
+      <button class="tab-btn" data-tab="overview">Overview</button>
+      <button class="tab-btn" data-tab="lesson">Lesson</button>
+      <button class="tab-btn" data-tab="timetable">Timetable</button>
+      <button class="tab-btn" data-tab="orbit">The Orbit</button>
+    </div>
+
+    <div id="view"></div>
+  </div>
+
+<script>
+  // ---------- constants ----------
+  const POINTS = { segCorrect: 5, segWrong: 1, finalCorrect: 15, finalWrong: 3, completeBonus: 25 };
+  const CONSTELLATIONS = [
+    { name: 'Ursa Minor', threshold: 0 },
+    { name: 'Lyra', threshold: 120 },
+    { name: 'Cassiopeia', threshold: 300 },
+    { name: 'Draco', threshold: 550 },
+    { name: 'Cygnus', threshold: 850 },
+    { name: 'Andromeda', threshold: 1200 },
+    { name: 'Perseus', threshold: 1650 },
+    { name: 'Pegasus', threshold: 2200 },
+    { name: 'Orion', threshold: 2850 },
+    { name: 'Leo', threshold: 3600 },
+  ];
+  // Simplified stick-figure star patterns for each constellation (local coords, 0-100 x 0-60).
+  const CONSTELLATION_SHAPES = {
+    'Ursa Minor': { points: [[10,8],[22,14],[34,20],[48,24],[60,16],[66,32],[46,36]], lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]] },
+    'Lyra': { points: [[50,10],[30,30],[45,50],[65,50],[70,28]], lines: [[0,1],[1,2],[2,3],[3,4],[4,1]] },
+    'Cassiopeia': { points: [[10,40],[30,15],[50,35],[70,10],[90,30]], lines: [[0,1],[1,2],[2,3],[3,4]] },
+    'Draco': { points: [[8,50],[20,35],[35,40],[48,25],[60,30],[70,15],[85,20],[92,8]], lines: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7]] },
+    'Cygnus': { points: [[50,8],[50,35],[50,60],[25,30],[75,40]], lines: [[0,1],[1,2],[1,3],[1,4]] },
+    'Andromeda': { points: [[10,20],[30,35],[52,28],[74,40],[92,30]], lines: [[0,1],[1,2],[2,3],[3,4]] },
+    'Perseus': { points: [[20,15],[38,28],[55,18],[60,42],[78,52],[40,55]], lines: [[0,1],[1,2],[1,5],[3,1],[3,4]] },
+    'Pegasus': { points: [[20,15],[70,12],[75,55],[22,58],[10,35],[2,20]], lines: [[0,1],[1,2],[2,3],[3,0],[3,4],[4,5]] },
+    'Orion': { points: [[15,10],[75,12],[35,35],[50,38],[65,35],[20,60],[70,58]], lines: [[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]] },
+    'Leo': { points: [[10,38],[30,45],[50,40],[62,25],[55,12],[68,10],[78,20]], lines: [[0,1],[1,2],[2,3],[3,0],[3,4],[4,5],[5,6],[6,3]] },
+  };
+  function constellationSVG(name, unlocked, current) {
+    const shape = CONSTELLATION_SHAPES[name];
+    if (!shape) return '';
+    const stroke = unlocked ? 'rgba(201,163,78,0.9)' : 'rgba(239,231,216,0.18)';
+    const starFill = unlocked ? '#f5e6b8' : 'rgba(239,231,216,0.2)';
+    const lines = shape.lines.map(([a, b]) => {
+      const [x1, y1] = shape.points[a], [x2, y2] = shape.points[b];
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="1" />`;
+    }).join('');
+    const stars = shape.points.map(([x, y]) => {
+      const cls = current ? 'const-star-pt current' : 'const-star-pt';
+      return `<circle class="${cls}" cx="${x}" cy="${y}" r="${current ? 3.2 : 2.2}" fill="${starFill}" />`;
+    }).join('');
+    return `<svg viewBox="0 0 100 60" class="const-svg">${lines}${stars}</svg>`;
+  }
+  const SAMPLE_MATERIALS = [
+  {
+    id: 'sample-kinematics',
+    title: 'H2 Physics — Kinematics: Distance & Displacement',
+    createdAt: Date.parse('2026-01-10'),
+    content: 'H2 Physics — Kinematics Notes. Distance is the total length of the path traveled by an object, a scalar quantity with magnitude only. Displacement is the straight-line distance from the starting point to the final point, in a specified direction — a vector quantity with both magnitude and direction. Speed is distance traveled per unit time (a scalar); velocity is displacement per unit time (a vector). Average velocity = displacement / time. A velocity-time graph shows how an object\'s velocity changes over time; the gradient of the graph gives acceleration, and the area under the graph gives displacement. If an object returns to its starting point, its net displacement is zero even though it has traveled a nonzero distance.',
+    lesson: {
+      overview: 'This lesson covers the difference between distance and displacement, works through a concrete out-and-back example, and shows how to read velocity-time graphs.',
+      completedAt: null,
+      segments: [
+        {
+          id: 'seg-0', completed: false, score: null, pointsEarned: 0,
+          label: 'Distance vs Displacement',
+          narration: "Let's start with two ideas that sound similar but mean very different things in physics: distance and displacement. Distance is simply how far you've traveled in total — it doesn't care which direction you went, it just adds up every step of the journey. If you walk to the shop and back, the distance you've covered is the full length of that round trip. Displacement is different. It only cares about where you started and where you ended up, measured in a straight line, and it includes direction. So if you end up back where you started, your displacement is zero, no matter how far you actually walked. That's the key distinction: distance is a scalar, meaning it only has size, while displacement is a vector, meaning it has both size and direction. Think of distance as what your pedometer counts, and displacement as what a straight arrow from start to finish would show on a map. This distinction matters because it's the same relationship we'll see between speed and velocity, and between distance-time graphs and velocity-time graphs, so getting comfortable with it now will make everything else in kinematics click into place.",
+          bullets: [
+            'Distance: scalar, magnitude only',
+            'Displacement: vector, magnitude + direction',
+            '$s$ = straight-line distance from start to end',
+            'Return to start → displacement $= 0$',
+          ],
+          visual: {
+            type: 'comparison',
+            items: ['Distance', 'Displacement'],
+            rows: [
+              { label: 'Type of quantity', values: ['Scalar', 'Vector'] },
+              { label: 'What it measures', values: ['Total path length', 'Straight-line change in position'] },
+              { label: 'Needs a direction?', values: ['No', 'Yes'] },
+            ],
+          },
+          quiz: [
+            { question: 'Which of these best describes displacement?', choices: ['The total length of the path traveled', 'The straight-line distance from start to end, with direction', 'The speed at the end of a journey', 'The time taken to travel a path'], correctIndex: 1, explanation: "Displacement is a vector - it's the straight-line change in position from start to end, including direction." },
+            { question: 'A runner does one full lap of a 400m circular track and returns to the start. What is their displacement?', choices: ['400m', '200m', '0m', 'Cannot be determined'], correctIndex: 2, explanation: 'Since the runner ends exactly where they started, the straight-line change in position is zero, even though they covered 400m of distance.' },
+            { question: 'Distance is classified as a:', choices: ['Vector', 'Scalar', 'Neither scalar nor vector', 'Both scalar and vector'], correctIndex: 1, explanation: 'Distance only has magnitude (size), with no direction, making it a scalar quantity.' },
+            { question: 'Which statement is always true?', choices: ['Distance is always greater than or equal to the magnitude of displacement', 'Displacement is always greater than distance', 'Distance and displacement are always equal', 'Displacement is always negative'], correctIndex: 0, explanation: 'The straight-line displacement can never exceed the actual path length traveled, so distance is always ≥ the magnitude of displacement.' },
+            { question: 'If you walk 3m east then 4m north, what is the magnitude of your displacement?', choices: ['7m', '1m', '5m', '12m'], correctIndex: 2, explanation: 'Using Pythagoras: the square root of (3 squared + 4 squared) = the square root of 25 = 5m, the straight-line distance from start to finish.' },
+          ],
+        },
+        {
+          id: 'seg-1', completed: false, score: null, pointsEarned: 0,
+          label: 'Displacement in Action: Out and Back',
+          narration: "Let's make this concrete with an example you can picture. Imagine a student standing at the school gate. She jogs twenty metres east to a tree, then turns around and jogs the same twenty metres back to the gate. How far has she traveled? Easy — twenty metres out, plus twenty metres back, so forty metres of total distance. But what's her displacement? Remember, displacement only cares about her starting position compared to her final position. She started at the gate, and she ended at the gate. So even though her legs did a lot of work, her net displacement is exactly zero. This is a really common trap in physics problems, because our instinct is to add up all the movement, but displacement asks a completely different question: where did you end up relative to where you began? Any time a journey brings you back to your starting point, no matter how long or winding the path, the displacement is always zero. Keep this example in your back pocket, because it's the cleanest way to explain the difference between distance and displacement to anyone, including yourself, when you're checking your working in an exam.",
+          bullets: [
+            '20m out + 20m back = 40m distance',
+            'Ends where she started',
+            'Net displacement $= 0$m',
+            'Any round trip → displacement $= 0$',
+          ],
+          visual: {
+            type: 'motion',
+            unitLabel: 'm',
+            keyframes: [
+              { t: 0, position: 0, caption: 'Starts at the school gate' },
+              { t: 0.5, position: 20, caption: 'Jogs 20m east to the tree' },
+              { t: 1.0, position: 0, caption: 'Jogs 20m back to the gate' },
+            ],
+          },
+          quiz: [
+            { question: 'In the gate-to-tree-and-back example, what is the total distance traveled?', choices: ['0m', '20m', '40m', '10m'], correctIndex: 2, explanation: '20m out plus 20m back adds up to 40m of total distance.' },
+            { question: 'What is the net displacement in this example?', choices: ['40m east', '20m east', '0m', 'Cannot be determined'], correctIndex: 2, explanation: 'Since she ends exactly where she started, her net displacement is zero.' },
+            { question: 'Why is displacement zero even though distance is 40m?', choices: ['Because she moved slowly', 'Because displacement only compares start and end position', "Because the tree isn't a real destination", 'Because 40m rounds down to 0'], correctIndex: 1, explanation: 'Displacement depends only on the straight-line relationship between the starting and ending points, not the path taken.' },
+            { question: 'If she had stopped at the tree instead of returning, what would her displacement have been?', choices: ['0m', '20m east', '40m', '20m west'], correctIndex: 1, explanation: 'Stopping at the tree means her final position is 20m east of the gate, so her displacement is 20m east.' },
+            { question: 'Which everyday example also has zero net displacement?', choices: ['Driving from home to work', 'Walking around a park and back to your car', 'Flying from city A to city B', 'Running a 100m sprint'], correctIndex: 1, explanation: 'Any round trip that returns to the starting point has zero net displacement, regardless of the path or distance covered.' },
+          ],
+        },
+        {
+          id: 'seg-2', completed: false, score: null, pointsEarned: 0,
+          label: 'Reading a Velocity-Time Graph',
+          narration: "Now let's connect this to graphs, because velocity-time graphs are one of the most useful tools in kinematics once you know how to read them. On a velocity-time graph, time sits along the bottom and velocity runs up the side. The steepness, or gradient, of the line at any point tells you the acceleration — a steep upward line means speeding up quickly, a flat horizontal line means constant velocity, and a downward slope means slowing down. But here's the really powerful part: the area between the line and the time axis tells you the displacement over that time period. So if an object speeds up, cruises at a constant speed, then slows back down to a stop, you can picture that as a shape on the graph — a sloped line up, a flat top, and a sloped line back down. Calculating the area under that shape gives you exactly how far the object traveled in that time. This means a velocity-time graph is really telling you two stories at once: the slope tells you about acceleration, and the area tells you about displacement. Once that clicks, these graphs stop being abstract lines and start being a complete picture of a journey.",
+          bullets: [
+            'Gradient of graph = acceleration',
+            'Area under graph = displacement',
+            'Flat line = constant velocity',
+            '$v$-$t$ graph tells two stories at once',
+          ],
+          visual: {
+            type: 'graph',
+            xLabel: 'Time (s)',
+            yLabel: 'Velocity (m/s)',
+            series: [{ label: 'Velocity', points: [{ x: 0, y: 0 }, { x: 2, y: 10 }, { x: 5, y: 10 }, { x: 7, y: 0 }] }],
+          },
+          quiz: [
+            { question: 'On a velocity-time graph, what does the gradient represent?', choices: ['Displacement', 'Distance', 'Acceleration', 'Time'], correctIndex: 2, explanation: 'The steepness (gradient) of a velocity-time graph shows how quickly velocity is changing, which is acceleration.' },
+            { question: 'What does the area under a velocity-time graph represent?', choices: ['Acceleration', 'Displacement', 'Speed', 'Momentum'], correctIndex: 1, explanation: 'The area between the velocity-time line and the time axis gives the displacement over that time interval.' },
+            { question: 'A horizontal (flat) line on a velocity-time graph means:', choices: ['The object is stationary', 'The object is accelerating uniformly', 'The object is at constant velocity', 'The object has zero displacement'], correctIndex: 2, explanation: "A flat line means velocity isn't changing, i.e. constant velocity (zero acceleration), not necessarily zero velocity." },
+            { question: 'If a velocity-time graph shows a straight line sloping downward to zero, the object is:', choices: ['Speeding up', 'Decelerating (slowing down)', 'Moving at constant speed', 'Moving backward'], correctIndex: 1, explanation: 'A downward-sloping line means velocity is decreasing over time, i.e. the object is decelerating.' },
+            { question: 'For the graph in this segment, during which time interval is velocity constant?', choices: ['0 to 2 seconds', '2 to 5 seconds', '5 to 7 seconds', 'The whole 0 to 7 seconds'], correctIndex: 1, explanation: 'Between 2s and 5s, the velocity stays flat at 10 m/s, indicating constant velocity in that interval.' },
+          ],
+        },
+      ],
+      finalQuiz: {
+        completed: false, score: null, pointsEarned: 0,
+        questions: [
+          { question: 'A cyclist rides 500m to a shop, then rides straight back home along the same route. Which statement is correct?', choices: ['Distance = 500m, Displacement = 500m', 'Distance = 1000m, Displacement = 0m', 'Distance = 0m, Displacement = 1000m', 'Distance = 500m, Displacement = 0m'], correctIndex: 1, explanation: 'The total path covered is 500m there + 500m back = 1000m distance, but since the cyclist ends up back home, displacement is 0m.' },
+          { question: 'A velocity-time graph shows an object accelerating from 0 to 8 m/s over 4 seconds, then moving at a constant 8 m/s for 3 more seconds. What is the total displacement over these 7 seconds?', choices: ['16m', '32m', '40m', '56m'], correctIndex: 2, explanation: 'The first part is a triangle: half of 4 times 8 = 16m. The second part is a rectangle: 8 times 3 = 24m. Total = 16 + 24 = 40m.' },
+          { question: 'Two runners cover the same 400m distance on a circular track, but Runner A finishes at the starting line while Runner B stops halfway around. Which statement is true?', choices: ['Both have the same displacement', 'Runner A has a larger displacement than Runner B', 'Runner B has a larger displacement than Runner A', 'Neither has any displacement'], correctIndex: 2, explanation: "Runner A returns to the start, so displacement = 0. Runner B ends halfway around - a nonzero displacement equal to the track's diameter, larger than Runner A's zero." },
+          { question: "A student says: 'If distance and displacement are equal, the object must be moving in a straight line without reversing direction.' Is this correct?", choices: ['Yes, this is always true', 'No, distance and displacement can be equal even with direction changes', 'Yes, but only if the object is at constant speed', 'No, distance and displacement can never be equal'], correctIndex: 0, explanation: "Distance equals the magnitude of displacement only when the path is a straight line in one direction without doubling back - any reversal makes distance exceed displacement's magnitude." },
+          { question: "On a velocity-time graph, an object's line dips below the time axis (negative velocity) for part of the journey. What does this represent?", choices: ['The object is speeding up', "An error in the graph - velocity can't be negative", 'The object has reversed direction', 'The object has stopped'], correctIndex: 2, explanation: 'A negative velocity on a v-t graph means the object is moving in the opposite direction to what was defined as positive - it has reversed.' },
+          { question: 'A car accelerates uniformly from rest to 20 m/s in 5 seconds. Using the velocity-time graph relationship, what distance does it cover?', choices: ['20m', '50m', '100m', '4m'], correctIndex: 1, explanation: 'This is a triangle on the v-t graph: area = half times base times height = half times 5 times 20 = 50m.' },
+          { question: 'Which scenario would produce a velocity-time graph shaped like a symmetric triangle - rising steadily, then falling back to zero at the same rate?', choices: ['A car cruising at a constant 60 km/h', 'An object speeding up uniformly, then slowing down uniformly to a stop', 'An object standing still the whole time', 'An object moving away and never stopping'], correctIndex: 1, explanation: 'A symmetric triangular v-t graph shows uniform acceleration up to a peak speed, followed by uniform deceleration back to zero at the same rate.' },
+        ],
+      },
+    },
+  },
+  {
+    id: 'sample-bonding',
+    title: 'H2 Chemistry — Ionic and Covalent Bonding',
+    createdAt: Date.parse('2026-01-12'),
+    content: 'H2 Chemistry — Chemical Bonding Notes. Atoms bond to achieve a stable, full outer electron shell. Ionic bonding occurs when electrons are transferred from a metal atom to a non-metal atom, creating oppositely charged ions that attract each other via electrostatic forces — for example, sodium transfers an electron to chlorine to form sodium chloride (NaCl). Covalent bonding occurs when two non-metal atoms share pairs of electrons rather than transferring them — for example, in water (H2O), oxygen shares one electron pair with each of two hydrogen atoms, and the molecule has a bent shape due to repulsion between electron pairs. Bond strength varies: single, double, and triple covalent bonds involve one, two, or three shared electron pairs respectively, and generally, more shared pairs mean a stronger, shorter bond requiring more energy to break.',
+    lesson: {
+      overview: 'This lesson contrasts ionic and covalent bonding, looks closely at why water has a bent shape, and compares the relative strength of single, double, and triple bonds.',
+      completedAt: null,
+      segments: [
+        {
+          id: 'seg-0', completed: false, score: null, pointsEarned: 0,
+          label: 'Ionic vs Covalent Bonding',
+          narration: "Chemical bonding is really about atoms trying to reach a stable arrangement of electrons, and there are two main strategies for getting there. The first is ionic bonding, which happens between a metal and a non-metal. Here, the metal atom simply gives away one or more electrons entirely, and the non-metal atom takes them. This creates two charged particles, called ions — a positive one and a negative one — and since opposite charges attract, they're held together by a strong electrostatic pull. Table salt, sodium chloride, is the classic example: sodium hands over an electron to chlorine. The second strategy is covalent bonding, which happens between two non-metals. Instead of giving electrons away completely, the atoms share pairs of electrons between them, with both nuclei pulling on the shared pair. Water is a great example, where oxygen shares electrons with two separate hydrogen atoms. The key difference to remember is transfer versus sharing: ionic bonds transfer electrons completely and rely on the attraction between the resulting ions, while covalent bonds share electrons and rely on both atoms holding onto that shared pair.",
+          bullets: [
+            'Ionic: electrons transferred, metal + non-metal',
+            'Covalent: electrons shared, non-metal + non-metal',
+            'Ionic bonds → charged ions attract',
+            'Example: $NaCl$ (ionic), $H_2O$ (covalent)',
+          ],
+          visual: {
+            type: 'comparison',
+            items: ['Ionic Bond', 'Covalent Bond'],
+            rows: [
+              { label: 'Formed between', values: ['Metal + non-metal', 'Non-metal + non-metal'] },
+              { label: 'What happens to electrons', values: ['Transferred completely', 'Shared between atoms'] },
+              { label: 'Example', values: ['NaCl', 'H₂O'] },
+            ],
+          },
+          quiz: [
+            { question: 'Ionic bonds typically form between:', choices: ['Two metals', 'Two non-metals', 'A metal and a non-metal', 'Two noble gases'], correctIndex: 2, explanation: 'Ionic bonding involves electron transfer from a metal (which loses electrons easily) to a non-metal (which gains them easily).' },
+            { question: 'In covalent bonding, electrons are:', choices: ['Transferred completely between atoms', 'Shared between atoms', 'Removed from both atoms', 'Not involved at all'], correctIndex: 1, explanation: 'Covalent bonds form when atoms share pairs of electrons rather than transferring them.' },
+            { question: 'What holds ions together in an ionic bond?', choices: ['Shared electron pairs', 'Gravitational attraction', 'Electrostatic attraction between opposite charges', 'Magnetic forces'], correctIndex: 2, explanation: 'Once ions form, the positive and negative charges attract each other electrostatically, forming the ionic bond.' },
+            { question: 'Which of these is an example of a covalent compound?', choices: ['Sodium chloride (NaCl)', 'Water (H₂O)', 'Potassium bromide (KBr)', 'Magnesium oxide (MgO)'], correctIndex: 1, explanation: 'Water is formed from two non-metals (hydrogen and oxygen) sharing electrons - a covalent bond, unlike the other options, which are metal-non-metal ionic compounds.' },
+            { question: 'Why does sodium chloride form via electron transfer rather than sharing?', choices: ['Because sodium is a non-metal', 'Because one atom is a metal that readily loses an electron and the other a non-metal that readily gains one', 'Because both atoms are identical', 'Because chlorine cannot share electrons'], correctIndex: 1, explanation: 'Sodium (a metal) loses electrons easily, and chlorine (a non-metal) gains them easily, favoring complete transfer over sharing.' },
+          ],
+        },
+        {
+          id: 'seg-1', completed: false, score: null, pointsEarned: 0,
+          label: 'Inside a Water Molecule',
+          narration: "Let's zoom into a single water molecule to see covalent bonding in action. Water is made of one oxygen atom bonded to two hydrogen atoms. Oxygen needs two more electrons to complete its outer shell, and each hydrogen atom needs just one more. So oxygen forms a covalent bond with each hydrogen atom, sharing one pair of electrons per bond. That gives oxygen the two extra electrons it needs, spread across two separate bonds, and each hydrogen gets the one electron it needs. Now here's an interesting detail: you might expect the molecule to be a straight line, with the two hydrogens directly opposite each other, but it isn't. Water actually has a bent, or angular, shape. This happens because oxygen also has two extra, non-bonding pairs of electrons that aren't involved in any bond, and these pairs repel the bonding pairs, pushing the two hydrogen atoms closer together into a bent shape rather than a straight line. This bent shape turns out to be hugely important — it's part of the reason water is a polar molecule and behaves the way it does, dissolving so many substances and forming the basis for life as we know it.",
+          bullets: [
+            '$H_2O$: one oxygen, two hydrogens',
+            'Oxygen shares one electron pair with each H',
+            'Non-bonding pairs push the shape bent',
+            'Not a straight line — an angular molecule',
+          ],
+          visual: {
+            type: 'molecule',
+            atoms: [
+              { label: 'O', x: 5, y: 2 },
+              { label: 'H', x: 2, y: 6 },
+              { label: 'H', x: 8, y: 6 },
+            ],
+            bonds: [
+              { from: 0, to: 1, order: 1 },
+              { from: 0, to: 2, order: 1 },
+            ],
+          },
+          quiz: [
+            { question: 'How many hydrogen atoms bond with one oxygen atom in a water molecule?', choices: ['One', 'Two', 'Three', 'Four'], correctIndex: 1, explanation: 'A water molecule (H₂O) has one oxygen atom covalently bonded to two hydrogen atoms.' },
+            { question: 'What shape does a water molecule actually have?', choices: ['A perfectly straight line', 'A bent/angular shape', 'A perfect triangle', 'A perfect circle'], correctIndex: 1, explanation: "Water is bent, not linear, due to repulsion from oxygen's non-bonding electron pairs." },
+            { question: "Why isn't a water molecule shaped in a straight line?", choices: ['Because hydrogen is too small', "Because oxygen's non-bonding electron pairs repel the bonding pairs", 'Because of gravity', 'Because water is a liquid at room temperature'], correctIndex: 1, explanation: 'Oxygen has two extra non-bonding electron pairs that repel the bonding pairs, forcing the molecule into a bent shape.' },
+            { question: 'How many electron pairs does oxygen share in total across both bonds in water?', choices: ['One', 'Two', 'Three', 'Four'], correctIndex: 1, explanation: 'Oxygen shares one electron pair with each of the two hydrogen atoms, totalling two shared pairs.' },
+            { question: 'What type of bond connects oxygen and hydrogen in water?', choices: ['Ionic bond', 'Covalent bond', 'Metallic bond', 'No bond, just attraction'], correctIndex: 1, explanation: 'Oxygen and hydrogen are both non-metals, so they bond covalently by sharing electron pairs.' },
+          ],
+        },
+        {
+          id: 'seg-2', completed: false, score: null, pointsEarned: 0,
+          label: 'Comparing Bond Strengths',
+          narration: "Not all covalent bonds are created equal. When two atoms share just one pair of electrons, that's called a single bond. But some atoms share two pairs, forming a double bond, or even three pairs, forming a triple bond. As a general rule, the more electron pairs that are shared between two atoms, the stronger and shorter that bond becomes, and the more energy it takes to break it apart. Think of it like holding hands with one hand versus locking arms with both — more points of connection make it harder to pull apart. A single carbon-carbon bond, a double carbon-carbon bond, and a triple carbon-carbon bond all connect two carbon atoms, but they require increasingly more energy to break, in that order. This is why molecules with triple bonds, like the nitrogen gas that makes up most of our atmosphere, are so unreactive and stable — that triple bond is genuinely tough to break. Understanding this bond-strength pattern helps explain a lot of chemical behavior, from why certain reactions need more energy to get started, to why some molecules are far more stable than others sitting right next to them on the periodic table.",
+          bullets: [
+            'More shared pairs = stronger bond',
+            'Single < double < triple bond strength',
+            'Triple bonds need the most energy to break',
+            'Explains why $N_2$ is so unreactive',
+          ],
+          visual: {
+            type: 'bars',
+            yLabel: 'Bond energy (kJ/mol, approx)',
+            bars: [
+              { label: 'C–C single', value: 346 },
+              { label: 'C=C double', value: 614 },
+              { label: 'C≡C triple', value: 839 },
+            ],
+          },
+          quiz: [
+            { question: 'As the number of shared electron pairs increases from single to triple bond, bond strength:', choices: ['Decreases', 'Stays the same', 'Increases', 'Becomes unpredictable'], correctIndex: 2, explanation: 'More shared electron pairs generally means a stronger bond that requires more energy to break.' },
+            { question: 'Which requires the most energy to break?', choices: ['A single bond', 'A double bond', 'A triple bond', 'They all require equal energy'], correctIndex: 2, explanation: 'Triple bonds, with three shared electron pairs, are the strongest and need the most energy to break.' },
+            { question: 'Why is nitrogen gas (N₂) so unreactive?', choices: ['Because it has a weak single bond', "Because it has a strong triple bond that's hard to break", 'Because nitrogen atoms repel each other', 'Because it is ionic'], correctIndex: 1, explanation: 'Nitrogen gas has a very strong triple bond between its two nitrogen atoms, making it energetically difficult to break apart and react.' },
+            { question: 'A double bond involves how many shared electron pairs?', choices: ['One', 'Two', 'Three', 'Four'], correctIndex: 1, explanation: 'A double bond consists of two shared electron pairs between the bonded atoms.' },
+            { question: 'Compared to a single bond, a double bond between the same two atoms is generally:', choices: ['Longer and weaker', 'Shorter and stronger', 'The same length and strength', 'Impossible to form'], correctIndex: 1, explanation: 'More shared electron pairs pull the atoms closer together and hold them more strongly, making double bonds shorter and stronger than single bonds.' },
+          ],
+        },
+      ],
+      finalQuiz: {
+        completed: false, score: null, pointsEarned: 0,
+        questions: [
+          { question: 'Magnesium oxide (MgO) forms between a metal and a non-metal. What type of bond would you expect, and why?', choices: ['Covalent, because both share electrons equally', 'Ionic, because the metal transfers electrons to the non-metal', 'Metallic, because both atoms are metals', 'No bond forms between these elements'], correctIndex: 1, explanation: 'Metal + non-metal combinations typically form ionic bonds through electron transfer, just like NaCl.' },
+          { question: "A student claims water should be a straight line because oxygen only bonds to two atoms. What's the flaw in this reasoning?", choices: ["Oxygen doesn't actually bond to hydrogen", "The reasoning ignores oxygen's non-bonding electron pairs, which repel the bonds into a bent shape", 'Hydrogen atoms are too heavy to bend', 'There is no flaw - water is a straight line'], correctIndex: 1, explanation: "Bond count alone doesn't determine shape - repulsion from oxygen's two non-bonding electron pairs is what forces water into a bent shape." },
+          { question: 'Which pair of compounds would you expect to have similar bonding behavior?', choices: ['NaCl and MgO (both metal + non-metal)', 'NaCl and CO₂ (different bonding types)', 'H₂O and N₂ (different structures)', 'MgO and H₂O (different bonding types)'], correctIndex: 0, explanation: 'NaCl and MgO both form between a metal and a non-metal, so both bond ionically through electron transfer - the same underlying mechanism.' },
+          { question: 'If breaking a C-C single bond requires about 346 kJ/mol, and a C≡C triple bond requires about 839 kJ/mol, what does this tell you about triple bonds?', choices: ['They are weaker and easier to break', 'They require substantially more energy to break, consistent with more shared electron pairs', 'They contain fewer electrons than single bonds', 'Bond energy has no relationship to the number of shared pairs'], correctIndex: 1, explanation: "The much higher energy requirement for the triple bond directly reflects its three shared electron pairs compared to the single bond's one pair." },
+          { question: "Why can't two sodium atoms form an ionic bond with each other?", choices: ['Because sodium is a non-metal', 'Because ionic bonding needs one atom that loses electrons and one that gains them, and two sodium atoms would both only want to lose electrons', 'Because sodium atoms are too large', 'Because sodium always forms covalent bonds'], correctIndex: 1, explanation: 'Ionic bonding requires an electron donor (metal) and an electron acceptor (non-metal) - two sodium atoms would both try to lose electrons, so no transfer (and thus no ionic bond) can occur between them.' },
+          { question: 'A molecule has a bent shape similar to water. What can you infer about its central atom?', choices: ['It has no bonds at all', 'It likely has non-bonding electron pairs that repel its bonding pairs into a bent arrangement', 'It must be a metal', 'It cannot form covalent bonds'], correctIndex: 1, explanation: 'A bent molecular shape is a strong indicator of non-bonding electron pairs on the central atom repelling the bonded pairs, just as in water.' },
+          { question: 'Considering both bond strength and bonding type, which statement correctly compares NaCl and N₂?', choices: ['NaCl is held by shared electrons; N₂ by ion attraction', 'NaCl is held by electrostatic attraction between ions; N₂ is held by a strong shared triple bond', 'Both are held together the same way', 'Neither forms stable bonds at room temperature'], correctIndex: 1, explanation: 'NaCl is ionic, held by electrostatic attraction between Na⁺ and Cl⁻ ions, while N₂ is covalent, held together by a strong triple bond of shared electron pairs - two entirely different bonding mechanisms.' },
+        ],
+      },
+    },
+  },
+];
+
+  const COUNTRIES = ["Singapore","India","United States","United Kingdom","Australia","Canada","China","Japan","South Korea","Malaysia","Indonesia","Philippines","Thailand","Vietnam","Germany","France","Italy","Spain","Netherlands","Brazil","Mexico","Nigeria","South Africa","Egypt","United Arab Emirates","Saudi Arabia","Pakistan","Bangladesh","Sri Lanka","New Zealand","Ireland","Sweden","Norway","Denmark","Finland","Switzerland","Poland","Russia","Turkey","Israel","Kenya","Ghana","Argentina","Chile","Colombia","Peru","Hong Kong","Taiwan","Other"];
+
+  const LESSON_SYSTEM_PROMPT = `You are an expert, warm human teacher preparing a self-paced guided lesson from a student's own notes - the explanation style of a clear Khan Academy walkthrough, structured like a Geniebook-style guided practice session. Assume the student may be a complete beginner who understands a concept far better when they can see it, not just hear it described - this matters most for abstract or symbol-heavy material (equations, chemical bonding, probability, statistics) where words alone are hard to follow.
+Read the study material and design a complete lesson:
+- Write a 2-sentence overview of what the lesson covers.
+- Divide the material into 3 to 5 segments based on its natural structure and length.
+- For each segment, write a "label" (a short descriptive title, not "Segment 1").
+- For each segment, write a "narration" script of 150-220 words written exactly as a warm, encouraging teacher would say it out loud: conversational, plain language, uses analogies, no bullet points, no markdown. Narration is read aloud by text-to-speech, so describe any maths or notation in spoken words (e.g. "the integral of x squared" not "$\\int x^2\\,dx$", "the probability of A given B" not "$P(A|B)$") - never put LaTeX or symbols in narration.
+- For each segment, decide whether a visual would help a beginner picture the idea. Default toward including one whenever the concept is abstract, symbolic, or commonly confusing - equations, chemical bonding, probability, statistics, motion, cycles, processes, timelines, comparisons - and skip it only for simple, purely definitional segments where a picture would add nothing. Pick whichever fits best, or {"type":"none"} if truly nothing fits:
+  - A formula or expression that deserves to be shown precisely and given visual weight, e.g. an integral, the quadratic formula, a probability rule, a chemical equation: {"type":"equation","expression":string (LaTeX only, no $ delimiters here),"caption":string (plain text, optional)}.
+  - Two variables changing together, e.g. velocity vs time, supply vs demand, a probability density curve: {"type":"graph","xLabel":string,"yLabel":string,"series":[{"label":string,"points":[{"x":number,"y":number}]}]} with 4 to 8 real, meaningful points.
+  - A discrete distribution, frequency count, or comparison of category sizes, e.g. a probability distribution table, survey results, exam grade spread: {"type":"bars","yLabel":string,"bars":[{"label":string,"value":number}]} with 3 to 8 bars.
+  - Motion or position along a physical line with a real signed distance, e.g. displacement: {"type":"motion","unitLabel":string,"keyframes":[{"t":number,"position":number,"caption":string}]} with 3 to 6 keyframes, "t" from 0 to 1 increasing.
+  - A sequence of events over time - history, a story's plot, developmental stages, milestones: {"type":"timeline","events":[{"t":number,"label":string,"detail":string}]} with 3 to 6 events, "t" from 0 to 1 increasing.
+  - A repeating/cyclical process - the water cycle, the cell cycle, a feedback loop, a business cycle: {"type":"cycle","stages":[{"label":string,"detail":string}]} with 3 to 6 stages in order.
+  - A sequential process or steps - photosynthesis, an algorithm, a reaction pathway, a methodology: {"type":"flow","steps":[{"label":string,"detail":string}]} with 3 to 6 steps in order.
+  - Two overlapping sets or events, e.g. independent vs overlapping probability events, set intersections: {"type":"venn","labelA":string,"labelB":string,"overlapLabel":string,"note":string}.
+  - A simple molecule's bonding structure, e.g. water, methane, carbon dioxide, a simple organic compound: {"type":"molecule","atoms":[{"label":string (element symbol),"x":number,"y":number}],"bonds":[{"from":number (atom index),"to":number (atom index),"order":1, 2, or 3}]} with realistic relative atom positions and correct bond orders (double/triple bonds where the real molecule has them).
+  - Comparing two or three things side by side, e.g. two characters, two compounds, two theories: {"type":"comparison","items":[string,string],"rows":[{"label":string,"values":[string,string]}]} with 2 to 4 rows.
+  Use at most one visual per segment.
+- For each segment, also write "bullets": an array of 3 to 5 short on-screen highlights (5-12 words each, plain phrases, not full sentences) capturing the key takeaways in the order they're covered. Unlike narration, bullets are shown on screen only and never spoken, so use exact notation wherever it matters: wrap maths, chemistry, or other formal notation in LaTeX using $...$ for inline or $$...$$ for a standalone expression, e.g. "The area is $\\int_0^2 x^2\\,dx$", "$P(A \\cap B) = P(A)P(B)$", "Water is $H_2O$". Never approximate a formula or equation in words when you can show it exactly - this is the single most important rule for maths, physics, chemistry, and statistics material.
+- For each segment, write exactly 5 multiple-choice questions testing understanding of that segment specifically. Question text, choices, and explanations may and should use LaTeX with $...$ wherever exact notation matters, the same way bullets do.
+- Write a final set of 6 to 8 multiple-choice questions covering the entire material. Make these noticeably harder than the segment quizzes: prioritize application and synthesis over recall. Favor questions that require combining ideas from more than one segment, applying a concept to a new example or scenario, or catching a common misconception, over anything answerable from a single remembered fact. Where the subject allows it (e.g. maths, science), include at least one worked-application question.
+- Every question needs exactly 4 choices, a zero-based correctIndex, and a one-sentence explanation.
+- Base everything strictly on the given material - never invent facts not supported by it.
+Respond with ONLY valid JSON, no markdown fences, no preamble. Schema:
+{"overview":string,"segments":[{"label":string,"narration":string,"visual":{"type":"none"},"bullets":[string,string],"quiz":[{"question":string,"choices":[string,string,string,string],"correctIndex":number,"explanation":string}]}],"finalQuiz":[{"question":string,"choices":[string,string,string,string],"correctIndex":number,"explanation":string}]}
+Note: "visual" follows whichever shape matches its "type" as described above (none/equation/graph/bars/motion/timeline/cycle/flow/venn/molecule/comparison), not always the {"type":"none"} shown here.`;
+
+  // ---------- state ----------
+  const state = {
+    userId: null,
+    profile: null,
+    materials: [],
+    view: 'overview',
+    activeMaterialId: null,
+    building: false,
+    buildStatus: '',
+    buildError: null,
+    voices: [],
+    selectedVoiceName: null,
+    speaking: false,
+    paused: false,
+    quizMode: null,
+    quizSegmentId: null,
+    quizRuntime: null,
+    lbView: 'global',
+    playProgress: 0,
+    revealTimer: null,
+    apiKey: '',
+  };
+
+  function defaultProfile() {
+    return { displayName: '', country: '', totalPoints: 0, currentStreak: 0, bestStreak: 0, lastActiveDate: null };
+  }
+
+  // ---------- storage helpers ----------
+  // Standalone build: uses real localStorage (window.storage only exists inside
+  // the Claude.ai artifact sandbox this was originally prototyped in). "shared"
+  // is accepted for API compatibility but has no cross-visitor meaning here -
+  // there's no backend, so a shared key is just a differently-prefixed local key.
+  const LS_PREFIX = 'studyops:';
+  async function storageGet(key, shared = false) {
+    try {
+      const raw = localStorage.getItem(LS_PREFIX + (shared ? 'shared:' : '') + key);
+      return raw == null ? null : JSON.parse(raw);
+    } catch { return null; }
+  }
+  let storageIssueNotified = false;
+  function notifyStorageIssue() {
+    if (storageIssueNotified) return;
+    storageIssueNotified = true;
+    const toast = document.createElement('div');
+    toast.className = 'badge-toast storage-toast';
+    toast.textContent = '⚠ Trouble saving right now — your browser storage may be full or disabled (private/incognito mode blocks it).';
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 5000);
+  }
+  async function storageSet(key, value, shared = false) {
+    try {
+      localStorage.setItem(LS_PREFIX + (shared ? 'shared:' : '') + key, JSON.stringify(value));
+    } catch (e) {
+      console.warn('Storage write failed - continuing without persistence for this item.', e);
+      notifyStorageIssue();
+    }
+  }
+  async function storageDelete(key, shared = false) {
+    try { localStorage.removeItem(LS_PREFIX + (shared ? 'shared:' : '') + key); } catch {}
+  }
+
+  // ---------- xp / level math ----------
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function yesterdayStr() { return new Date(Date.now() - 86400000).toISOString().slice(0, 10); }
+
+  function levelInfo(points) {
+    let idx = 0;
+    for (let i = 0; i < CONSTELLATIONS.length; i++) { if (points >= CONSTELLATIONS[i].threshold) idx = i; else break; }
+    const current = CONSTELLATIONS[idx];
+    const next = CONSTELLATIONS[idx + 1] || null;
+    const floor = current.threshold;
+    const ceiling = next ? next.threshold : current.threshold + 900;
+    const fraction = ceiling > floor ? Math.min((points - floor) / (ceiling - floor), 1) : 1;
+    return { idx, name: current.name, floor, ceiling, fraction, nextName: next ? next.name : `Deep Sky ${idx + 2}` };
+  }
+
+  // ---------- helpers ----------
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  // Renders plain text with any $...$ (inline) or $$...$$ (display) LaTeX
+  // segments turned into real math notation via KaTeX; everything else is
+  // still escaped as plain text. Falls back to plain escaped text if KaTeX
+  // failed to load or a segment fails to parse.
+  function renderMathText(str) {
+    if (str == null) return '';
+    const s = String(str);
+    if (!window.katex) return escapeHTML(s);
+    const regex = /\$\$(.+?)\$\$|\$(.+?)\$/g;
+    let lastIndex = 0, match, out = '';
+    while ((match = regex.exec(s)) !== null) {
+      if (match.index > lastIndex) out += escapeHTML(s.slice(lastIndex, match.index));
+      const isBlock = match[1] !== undefined;
+      const expr = isBlock ? match[1] : match[2];
+      try { out += katex.renderToString(expr, { throwOnError: false, displayMode: isBlock }); }
+      catch (e) { out += escapeHTML(expr); }
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < s.length) out += escapeHTML(s.slice(lastIndex));
+    return out;
+  }
+
+  function showPointsToast(points, label) {
+    const toast = document.createElement('div');
+    toast.className = 'badge-toast';
+    toast.textContent = `✦ ${label} — +${points} stars`;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 2600);
+  }
+
+  // ---------- scoreboard ----------
+  function setDigit(id, value) { document.getElementById(id).querySelector('.digit-inner').style.transform = `translateY(-${value * 10}%)`; }
+  function initDigits() {
+    for (let i = 0; i < 4; i++) {
+      const inner = document.getElementById(`digit-${i}`).querySelector('.digit-inner');
+      inner.innerHTML = Array.from({ length: 10 }, (_, n) => `<div class="digit-num">${n}</div>`).join('');
+    }
+    setDigits(0);
+  }
+  function setDigits(xp) { String(Math.max(0, Math.floor(xp))).padStart(4, '0').split('').map(Number).forEach((d, i) => setDigit(`digit-${i}`, d)); }
+
+  function renderScoreboard() {
+    const li = levelInfo(state.profile.totalPoints);
+    document.getElementById('level-badge').textContent = li.idx + 1;
+    document.getElementById('level-caption').textContent = li.name;
+    setDigits(state.profile.totalPoints);
+    document.getElementById('streak-num').textContent = state.profile.currentStreak;
+    document.getElementById('flame-icon').style.opacity = state.profile.currentStreak > 0 ? '1' : '0.3';
+    document.getElementById('level-progress-fill').style.width = `${Math.round(li.fraction * 100)}%`;
+    document.getElementById('level-progress-caption').textContent = `${state.profile.totalPoints - li.floor} / ${li.ceiling - li.floor} stars to ${li.nextName}`;
+  }
+
+  // ---------- materials ----------
+  async function addMaterial({ title, content }) {
+    if (state.materials.length >= 5) return;
+    const id = crypto.randomUUID();
+    const material = { id, title: title || 'Untitled material', content: content.slice(0, 20000), createdAt: Date.now(), lesson: null };
+    state.materials.push(material);
+    await storageSet(`material:${id}`, material);
+    await storageSet('materials-order', state.materials.map(m => m.id));
+  }
+  async function removeMaterial(id) {
+    state.materials = state.materials.filter(m => m.id !== id);
+    await storageDelete(`material:${id}`);
+    await storageSet('materials-order', state.materials.map(m => m.id));
+    if (state.activeMaterialId === id) state.activeMaterialId = null;
+  }
+  async function saveMaterial(material) { await storageSet(`material:${material.id}`, material); }
+  async function saveProfile() { await storageSet('profile', state.profile); }
+  async function syncLeaderboard() {
+    if (!state.profile.displayName || !state.profile.country) return;
+    await storageSet(`leaderboard:${state.userId}`, { displayName: state.profile.displayName, country: state.profile.country, totalPoints: state.profile.totalPoints, updatedAt: Date.now() }, true);
+  }
+
+  // ---------- pdf extraction (client-side, no server) ----------
+  let pdfjsPromise = null;
+  const PDFJS_VERSION = '6.1.200';
+  function loadPdfJs() {
+    if (!pdfjsPromise) {
+      pdfjsPromise = import(`https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.min.mjs`).then(lib => {
+        lib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.mjs`;
+        return lib;
+      });
+    }
+    return pdfjsPromise;
+  }
+  async function extractPdfText(file) {
+    const pdfjsLib = await loadPdfJs();
+    const buf = await file.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({
+      data: buf,
+      // Character maps + standard font metrics, needed for PDFs with
+      // non-standard font encodings - fixes the "cMapUrl parameter" warning
+      // and improves extraction accuracy on those PDFs.
+      cMapUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/cmaps/`,
+      cMapPacked: true,
+      standardFontDataUrl: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${PDFJS_VERSION}/standard_fonts/`,
+      // Errors only - silences benign "fake worker" / font-hinting warnings.
+      // This reaches the fallback (fake worker) path, unlike setVerbosityLevel().
+      verbosity: 0,
+    }).promise;
+    let text = '';
+    const maxPages = Math.min(doc.numPages, 60);
+    for (let i = 1; i <= maxPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it => it.str).join(' ') + '\n\n';
+    }
+    return text.trim();
+  }
+
+  // ---------- lesson generation ----------
+  async function generateLesson(material) {
+    const apiKey = state.apiKey;
+    if (!apiKey) throw new Error('NO_API_KEY');
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        // Anthropic's documented opt-in for calling the API directly from a
+        // browser with a user-supplied key (the "bring your own key" pattern) -
+        // https://docs.claude.com - without this header the request is
+        // blocked by CORS.
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-5',
+        max_tokens: 8192,
+        system: LESSON_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: `Study material title: ${material.title}\n\nContent:\n${material.content.slice(0, 12000)}` }],
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+    const textBlock = (data.content || []).find(b => b.type === 'text');
+    if (!textBlock) throw new Error('No response from the model.');
+    const cleaned = textBlock.text.trim().replace(/^```json\s*|^```\s*|```$/g, '');
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (e) {
+      // The model writes LaTeX like \int, \frac, \pi straight into JSON strings -
+      // valid JSON needs those backslashes doubled. Repair any backslash that
+      // isn't already part of a real JSON escape, then retry once.
+      const repaired = cleaned.replace(/\\(u[0-9a-fA-F]{4}|["\\/bfnrt])|\\/g, (m, valid) => (valid !== undefined ? m : '\\\\'));
+      parsed = JSON.parse(repaired);
+    }
+    if (!Array.isArray(parsed.segments) || parsed.segments.length === 0) throw new Error('No segments returned.');
+    const segments = parsed.segments.map(s => ({ id: crypto.randomUUID(), label: s.label || 'Segment', narration: s.narration || '', bullets: Array.isArray(s.bullets) ? s.bullets : [], visual: (s.visual && typeof s.visual === 'object' && s.visual.type) ? s.visual : { type: 'none' }, quiz: Array.isArray(s.quiz) ? s.quiz : [], completed: false, score: null, pointsEarned: 0 }));
+    const finalQuiz = { questions: Array.isArray(parsed.finalQuiz) ? parsed.finalQuiz : [], completed: false, score: null, pointsEarned: 0 };
+    return { overview: parsed.overview || '', segments, finalQuiz, completedAt: null };
+  }
+
+  async function buildToday() {
+    const pending = state.materials.filter(m => !m.lesson);
+    if (pending.length === 0) return;
+    if (!state.apiKey) {
+      state.buildError = 'Add your Anthropic API key in Settings (below) to generate new lessons - or just explore the sample lessons already in your stack.';
+      renderApp();
+      return;
+    }
+    state.building = true; state.buildError = null; renderApp();
+    for (let i = 0; i < pending.length; i++) {
+      const m = pending[i];
+      state.buildStatus = `Generating lesson ${i + 1} of ${pending.length}: ${m.title}…`;
+      renderApp();
+      try { m.lesson = await generateLesson(m); await saveMaterial(m); }
+      catch (e) {
+        state.buildError = e.message === 'NO_API_KEY'
+          ? 'Add your Anthropic API key in Settings (below) to generate new lessons.'
+          : `Could not generate a lesson for "${m.title}". Try again in a moment.`;
+        break;
+      }
+    }
+    state.building = false; state.buildStatus = ''; renderApp();
+  }
+
+  // ---------- scoring ----------
+  function applyPoints(points) {
+    const today = todayStr();
+    if (state.profile.lastActiveDate !== today) {
+      state.profile.currentStreak = state.profile.lastActiveDate === yesterdayStr() ? state.profile.currentStreak + 1 : 1;
+      state.profile.bestStreak = Math.max(state.profile.bestStreak, state.profile.currentStreak);
+      state.profile.lastActiveDate = today;
+    }
+    state.profile.totalPoints += points;
+  }
+  async function recordSegmentQuiz(material, segment, correctCount, totalQuestions) {
+    const wrong = Math.max(totalQuestions - correctCount, 0);
+    const points = correctCount * POINTS.segCorrect + wrong * POINTS.segWrong;
+    segment.completed = true; segment.score = { correct: correctCount, total: totalQuestions }; segment.pointsEarned = points;
+    applyPoints(points);
+    await saveMaterial(material); await saveProfile(); syncLeaderboard();
+    return points;
+  }
+  async function recordFinalQuiz(material, correctCount, totalQuestions) {
+    const wrong = Math.max(totalQuestions - correctCount, 0);
+    let points = correctCount * POINTS.finalCorrect + wrong * POINTS.finalWrong;
+    const allSegmentsDone = material.lesson.segments.every(s => s.completed);
+    if (allSegmentsDone) { points += POINTS.completeBonus; material.lesson.completedAt = Date.now(); }
+    material.lesson.finalQuiz.completed = true;
+    material.lesson.finalQuiz.score = { correct: correctCount, total: totalQuestions };
+    material.lesson.finalQuiz.pointsEarned = points;
+    applyPoints(points);
+    await saveMaterial(material); await saveProfile(); syncLeaderboard();
+    return points;
+  }
+
+  // ---------- narration (browser speech synthesis) ----------
+  // Well-known languages only - browsers otherwise list 40+ regional variants.
+  const PREFERRED_LANGS = ['en', 'zh', 'hi', 'es', 'fr', 'ar', 'ja', 'ko', 'de', 'pt'];
+  function initVoices() {
+    function load() {
+      state.voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+      if (!state.selectedVoiceName && state.voices.length) state.selectedVoiceName = pickDefaultVoice().name;
+    }
+    if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = load; load(); }
+  }
+  function filteredVoices() {
+    const all = state.voices;
+    let list = all.filter(v => v.lang && PREFERRED_LANGS.includes(v.lang.slice(0, 2).toLowerCase()));
+    if (list.length === 0) list = all;
+    // Natural/neural voices sound far more human than default system voices - surface those first.
+    return list.slice().sort((a, b) => {
+      const score = v => (/natural|neural|premium|enhanced|online/i.test(v.name) ? 0 : 1);
+      return score(a) - score(b) || a.lang.localeCompare(b.lang);
+    });
+  }
+  function pickDefaultVoice() {
+    const list = filteredVoices();
+    return list.find(v => /^en/i.test(v.lang)) || list[0] || { name: '' };
+  }
+
+  // Drives both the visual (graph/motion animation) and the bullet captions
+  // off one shared 0-1 progress value, paced to roughly match narration length.
+  function startSegmentPlayback(segment) {
+    clearInterval(state.revealTimer);
+    state.playProgress = 0;
+    const words = segment.narration.split(/\s+/).filter(Boolean).length || 60;
+    const totalMs = Math.max((words / 150) * 60000, 6000);
+    let elapsed = 0;
+    state.revealTimer = setInterval(() => {
+      if (!state.speaking || state.paused) return;
+      elapsed += 200;
+      state.playProgress = Math.min(1, elapsed / totalMs);
+      renderBoard(segment);
+      if (state.playProgress >= 1) clearInterval(state.revealTimer);
+    }, 200);
+  }
+  function stopSegmentPlayback() { clearInterval(state.revealTimer); }
+
+  function renderBoard(segment) {
+    const board = document.getElementById('lesson-board');
+    if (!board) return;
+    const progress = state.playProgress || 0;
+    const bullets = segment.bullets || [];
+    const revealedCount = Math.min(bullets.length, Math.ceil(progress * bullets.length));
+    const visualHTML = renderVisualHTML(segment.visual, progress);
+    const hasVisual = !!visualHTML;
+
+    if (!visualHTML && revealedCount === 0) {
+      board.innerHTML = `<p class="board-placeholder">▶ Press play to begin this segment</p>`;
+      return;
+    }
+
+    // The visual (graph/motion/etc.) has no persistent entrance animation, so
+    // it's safe to redraw fresh every tick. Bullets DO have a one-time fade/
+    // slide-in animation, so their nodes must stay put once created - tearing
+    // the whole board down and rebuilding it every tick (the old approach)
+    // replayed that animation for every bullet already on screen, which is
+    // what looked like constant jumping/glitching, especially right after a
+    // pause/resume forced a full rebuild.
+    let visualEl = board.querySelector(':scope > .board-visual');
+    let bulletsEl = board.querySelector(':scope > .board-bullets');
+    const needsShapeReset = board.querySelector('.board-placeholder') || (hasVisual && !visualEl) || (!hasVisual && visualEl);
+
+    if (needsShapeReset) {
+      board.innerHTML = hasVisual ? `<div class="board-visual">${visualHTML}</div>` : '';
+      visualEl = board.querySelector(':scope > .board-visual');
+      bulletsEl = null;
+    } else if (visualEl) {
+      visualEl.innerHTML = visualHTML;
+    }
+
+    if (!bulletsEl && revealedCount > 0) {
+      bulletsEl = document.createElement('div');
+      board.appendChild(bulletsEl);
+    }
+    if (bulletsEl) {
+      bulletsEl.className = 'board-bullets';
+      for (let i = bulletsEl.children.length; i < revealedCount; i++) {
+        const div = document.createElement('div');
+        div.className = 'board-bullet';
+        div.innerHTML = `<span class="mark">✦</span><span class="text">${renderMathText(bullets[i])}</span>`;
+        bulletsEl.appendChild(div);
+      }
+    }
+  }
+
+  function renderVisualHTML(visual, progress) {
+    if (!visual || !visual.type || visual.type === 'none') return '';
+    try {
+      if (visual.type === 'graph') return renderGraphSVG(visual, progress);
+      if (visual.type === 'motion') return renderMotionSVG(visual, progress);
+      if (visual.type === 'timeline') return renderTimelineSVG(visual, progress);
+      if (visual.type === 'cycle') return renderCycleSVG(visual, progress);
+      if (visual.type === 'flow') return renderFlowHTML(visual, progress);
+      if (visual.type === 'comparison') return renderComparisonHTML(visual, progress);
+      if (visual.type === 'equation') return renderEquationVisual(visual);
+      if (visual.type === 'molecule') return renderMoleculeSVG(visual);
+      if (visual.type === 'bars') return renderBarsSVG(visual, progress);
+      if (visual.type === 'venn') return renderVennSVG(visual);
+    } catch (e) { return ''; }
+    return '';
+  }
+
+  // A worked formula shown precisely with real math notation via KaTeX.
+  function renderEquationVisual(visual) {
+    if (!visual.expression) return '';
+    let rendered;
+    if (window.katex) {
+      try { rendered = katex.renderToString(visual.expression, { throwOnError: false, displayMode: true }); }
+      catch (e) { rendered = escapeHTML(visual.expression); }
+    } else {
+      rendered = escapeHTML(visual.expression);
+    }
+    return `<div class="equation-display">${rendered}</div>${visual.caption ? `<div class="motion-caption">${renderMathText(visual.caption)}</div>` : ''}`;
+  }
+
+  // Simple 2D molecule bonding diagram - atoms as labelled circles, bonds as 1/2/3 lines.
+  function renderMoleculeSVG(visual) {
+    const atoms = Array.isArray(visual.atoms) ? visual.atoms.filter(a => a.label && typeof a.x === 'number' && typeof a.y === 'number') : [];
+    const bonds = Array.isArray(visual.bonds) ? visual.bonds : [];
+    if (atoms.length < 2) return '';
+    const xs = atoms.map(a => a.x), ys = atoms.map(a => a.y);
+    const xMin = Math.min(...xs), xMax = Math.max(...xs), yMin = Math.min(...ys), yMax = Math.max(...ys);
+    const W = 200, H = 140, pad = 30;
+    const sx = x => (xMax > xMin ? pad + ((x - xMin) / (xMax - xMin)) * (W - 2 * pad) : W / 2);
+    const sy = y => (yMax > yMin ? pad + ((y - yMin) / (yMax - yMin)) * (H - 2 * pad) : H / 2);
+    const bondLines = bonds.map(b => {
+      const a1 = atoms[b.from], a2 = atoms[b.to];
+      if (!a1 || !a2) return '';
+      const x1 = sx(a1.x), y1 = sy(a1.y), x2 = sx(a2.x), y2 = sy(a2.y);
+      const order = Math.min(3, Math.max(1, b.order || 1));
+      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len, ny = dx / len;
+      let out = '';
+      for (let i = 0; i < order; i++) {
+        const off = (i - (order - 1) / 2) * 4;
+        out += `<line x1="${(x1 + nx * off).toFixed(1)}" y1="${(y1 + ny * off).toFixed(1)}" x2="${(x2 + nx * off).toFixed(1)}" y2="${(y2 + ny * off).toFixed(1)}" stroke="rgba(239,231,216,0.6)" stroke-width="2" />`;
+      }
+      return out;
+    }).join('');
+    const atomCircles = atoms.map(a => `
+      <circle cx="${sx(a.x).toFixed(1)}" cy="${sy(a.y).toFixed(1)}" r="13" fill="#1b2430" stroke="#c9a34e" stroke-width="1.5" />
+      <text x="${sx(a.x).toFixed(1)}" y="${sy(a.y).toFixed(1)}" text-anchor="middle" dominant-baseline="central" class="molecule-label">${escapeHTML(a.label)}</text>
+    `).join('');
+    return `<svg viewBox="0 0 ${W} ${H}" class="molecule-svg">${bondLines}${atomCircles}</svg>`;
+  }
+
+  // Bar chart - probability distributions, frequency counts, category comparisons.
+  function renderBarsSVG(visual, progress) {
+    const bars = Array.isArray(visual.bars) ? visual.bars.filter(b => b.label && typeof b.value === 'number') : [];
+    if (bars.length < 2) return '';
+    const W = 380, H = 180, ML = 36, MR = 10, MT = 10, MB = 34;
+    const plotW = W - ML - MR, plotH = H - MT - MB;
+    const maxVal = Math.max(...bars.map(b => b.value), 0.0001);
+    const gap = 8;
+    const barW = (plotW - gap * (bars.length - 1)) / bars.length;
+    const barsHTML = bars.map((b, i) => {
+      const grown = Math.max(0, Math.min(1, progress * bars.length - i + 1));
+      const h = (b.value / maxVal) * plotH * grown;
+      const x = ML + i * (barW + gap);
+      const y = MT + plotH - h;
+      return `
+        <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" fill="#c9a34e" rx="2" />
+        <text x="${(x + barW / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="graph-axis-label">${escapeHTML(b.label)}</text>
+      `;
+    }).join('');
+    const yLabel = escapeHTML(visual.yLabel || '');
+    return `
+      <svg viewBox="0 0 ${W} ${H}" class="graph-svg">
+        <line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="rgba(239,231,216,0.3)" stroke-width="1" />
+        <line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="rgba(239,231,216,0.3)" stroke-width="1" />
+        <text x="12" y="${MT + plotH / 2}" text-anchor="middle" class="graph-axis-label" transform="rotate(-90 12 ${MT + plotH / 2})">${yLabel}</text>
+        ${barsHTML}
+      </svg>
+    `;
+  }
+
+  // Two overlapping sets/events - probability intersections, independent vs overlapping events.
+  function renderVennSVG(visual) {
+    if (!visual.labelA || !visual.labelB) return '';
+    const W = 260, H = 150, r = 55, cxA = W / 2 - 28, cxB = W / 2 + 28, cy = H / 2 - 6;
+    return `
+      <svg viewBox="0 0 ${W} ${H}" class="venn-svg">
+        <circle cx="${cxA}" cy="${cy}" r="${r}" fill="rgba(201,163,78,0.18)" stroke="#c9a34e" stroke-width="1.5" />
+        <circle cx="${cxB}" cy="${cy}" r="${r}" fill="rgba(78,140,130,0.18)" stroke="#4e8c82" stroke-width="1.5" />
+        <text x="${cxA - 30}" y="${cy - r - 8}" text-anchor="middle" class="graph-axis-label venn-label">${escapeHTML(visual.labelA)}</text>
+        <text x="${cxB + 30}" y="${cy - r - 8}" text-anchor="middle" class="graph-axis-label venn-label">${escapeHTML(visual.labelB)}</text>
+        ${visual.overlapLabel ? `<text x="${W / 2}" y="${cy + 4}" text-anchor="middle" class="graph-axis-label venn-label">${escapeHTML(visual.overlapLabel)}</text>` : ''}
+      </svg>
+      ${visual.note ? `<div class="motion-caption">${renderMathText(visual.note)}</div>` : ''}
+    `;
+  }
+
+  // Sequence of events over time - history, plot structure, developmental stages, milestones.
+  function renderTimelineSVG(visual, progress) {
+    const events = Array.isArray(visual.events)
+      ? visual.events.filter(e => typeof e.t === 'number' && e.label).sort((a, b) => a.t - b.t)
+      : [];
+    if (events.length < 2) return '';
+    const W = 380, ML = 20, MR = 20, lineY = 26;
+    const sx = t => ML + t * (W - ML - MR);
+    const activeIdx = events.reduce((acc, e, i) => (progress >= e.t ? i : acc), 0);
+    const fillEndX = Math.max(ML, sx(progress)).toFixed(1);
+    const nodes = events.map((e, i) => {
+      const isCurrent = i === activeIdx;
+      const passed = progress >= e.t;
+      const fill = passed ? '#c9a34e' : 'rgba(239,231,216,0.25)';
+      return `<circle class="${isCurrent ? 'timeline-pt current' : 'timeline-pt'}" cx="${sx(e.t).toFixed(1)}" cy="${lineY}" r="${isCurrent ? 5 : 3.5}" fill="${fill}" />`;
+    }).join('');
+    const active = events[activeIdx];
+    const activeX = sx(active.t).toFixed(1);
+    return `
+      <svg viewBox="0 0 ${W} 48" class="timeline-svg">
+        <line x1="${ML}" y1="${lineY}" x2="${W - MR}" y2="${lineY}" stroke="rgba(239,231,216,0.2)" stroke-width="2" />
+        <line x1="${ML}" y1="${lineY}" x2="${fillEndX}" y2="${lineY}" stroke="#c9a34e" stroke-width="2" />
+        ${nodes}
+        <line x1="${activeX}" y1="${lineY + 6}" x2="${activeX}" y2="44" stroke="#c9a34e" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+      </svg>
+      <div class="motion-caption"><strong>${renderMathText(active.label)}</strong>${active.detail ? ' — ' + renderMathText(active.detail) : ''}</div>
+    `;
+  }
+
+  // Repeating/cyclical process - water cycle, cell cycle, feedback loops, business cycles.
+  function renderCycleSVG(visual, progress) {
+    const stages = Array.isArray(visual.stages) ? visual.stages.filter(s => s.label) : [];
+    if (stages.length < 3) return '';
+    const W = 200, H = 200, cx = W / 2, cy = H / 2, r = 72;
+    const n = stages.length;
+    const activeIdx = Math.min(n - 1, Math.floor(progress * n));
+    const nodes = stages.map((s, i) => {
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const x = cx + r * Math.cos(angle), y = cy + r * Math.sin(angle);
+      const isCurrent = i === activeIdx;
+      const fill = i <= activeIdx ? '#c9a34e' : 'rgba(239,231,216,0.2)';
+      return { x, y, svg: `<circle class="${isCurrent ? 'timeline-pt current' : 'timeline-pt'}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isCurrent ? 7 : 5}" fill="${fill}" />` };
+    });
+    const ringPoints = nodes.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const active = stages[activeIdx];
+    const activePt = nodes[activeIdx];
+    return `
+      <svg viewBox="0 0 ${W} ${H}" class="cycle-svg">
+        <polygon points="${ringPoints}" fill="none" stroke="rgba(239,231,216,0.15)" stroke-width="1.5" />
+        ${nodes.map(p => p.svg).join('')}
+        <line x1="${activePt.x.toFixed(1)}" y1="${(activePt.y + 8).toFixed(1)}" x2="${activePt.x.toFixed(1)}" y2="${H - 6}" stroke="#c9a34e" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" />
+      </svg>
+      <div class="motion-caption"><strong>${renderMathText(active.label)}</strong>${active.detail ? ' — ' + renderMathText(active.detail) : ''}</div>
+    `;
+  }
+
+  // Sequential process/steps - photosynthesis, an algorithm, a methodology.
+  function renderFlowHTML(visual, progress) {
+    const steps = Array.isArray(visual.steps) ? visual.steps.filter(s => s.label) : [];
+    if (steps.length < 2) return '';
+    const revealedCount = Math.max(1, Math.ceil(progress * steps.length));
+    return `<div class="flow-row">${steps.slice(0, revealedCount).map((s, i) => `
+      ${i > 0 ? '<span class="flow-arrow">→</span>' : ''}
+      <div class="flow-step"><strong>${renderMathText(s.label)}</strong>${s.detail ? `<span>${renderMathText(s.detail)}</span>` : ''}</div>
+    `).join('')}</div>`;
+  }
+
+  // Side-by-side comparison of two or three things.
+  function renderComparisonHTML(visual, progress) {
+    const items = Array.isArray(visual.items) ? visual.items.slice(0, 3) : [];
+    const rows = Array.isArray(visual.rows) ? visual.rows.filter(r => r.label && Array.isArray(r.values)) : [];
+    if (items.length < 2 || rows.length === 0) return '';
+    const revealedCount = Math.max(1, Math.ceil(progress * rows.length));
+    return `
+      <div class="cmp-table" style="grid-template-columns: 1fr repeat(${items.length}, 1fr);">
+        <div class="cmp-head"></div>
+        ${items.map(it => `<div class="cmp-head">${renderMathText(it)}</div>`).join('')}
+        ${rows.slice(0, revealedCount).map(r => `
+          <div class="cmp-label">${renderMathText(r.label)}</div>
+          ${items.map((_, i) => `<div class="cmp-val">${renderMathText(r.values[i] || '—')}</div>`).join('')}
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Animated line graph (e.g. velocity-time) that draws itself as narration plays.
+  function renderGraphSVG(visual, progress) {
+    const series = Array.isArray(visual.series) ? visual.series.filter(s => Array.isArray(s.points) && s.points.length >= 2) : [];
+    if (series.length === 0) return '';
+    const W = 380, H = 190, ML = 42, MR = 14, MT = 14, MB = 30;
+    const plotW = W - ML - MR, plotH = H - MT - MB;
+    const allPoints = series.flatMap(s => s.points);
+    const xs = allPoints.map(p => Number(p.x) || 0), ys = allPoints.map(p => Number(p.y) || 0);
+    let xMin = Math.min(...xs), xMax = Math.max(...xs), yMin = Math.min(0, Math.min(...ys)), yMax = Math.max(...ys);
+    if (xMin === xMax) xMax = xMin + 1;
+    if (yMin === yMax) yMax = yMin + 1;
+    const sx = x => ML + ((x - xMin) / (xMax - xMin)) * plotW;
+    const sy = y => MT + plotH - ((y - yMin) / (yMax - yMin)) * plotH;
+    const colors = ['#c9a34e', '#4e8c82'];
+    const seriesHTML = series.map((s, si) => {
+      const pts = s.points.map(p => [sx(Number(p.x) || 0), sy(Number(p.y) || 0)]);
+      let len = 0;
+      for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+      const offset = (len * (1 - progress)).toFixed(1);
+      const pointsAttr = pts.map(p => p.join(',')).join(' ');
+      const color = colors[si % colors.length];
+      const dots = pts.map(([x, y], i) => {
+        const shown = pts.length <= 1 || i / (pts.length - 1) <= progress + 0.001;
+        return shown ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}" />` : '';
+      }).join('');
+      return `<polyline points="${pointsAttr}" fill="none" stroke="${color}" stroke-width="2.5" stroke-dasharray="${len.toFixed(1)}" stroke-dashoffset="${offset}" />${dots}`;
+    }).join('');
+    const xLabel = escapeHTML(visual.xLabel || 'x');
+    const yLabel = escapeHTML(visual.yLabel || 'y');
+    return `
+      <svg viewBox="0 0 ${W} ${H}" class="graph-svg">
+        <line x1="${ML}" y1="${MT}" x2="${ML}" y2="${MT + plotH}" stroke="rgba(239,231,216,0.3)" stroke-width="1" />
+        <line x1="${ML}" y1="${MT + plotH}" x2="${ML + plotW}" y2="${MT + plotH}" stroke="rgba(239,231,216,0.3)" stroke-width="1" />
+        <text x="${ML + plotW / 2}" y="${H - 6}" text-anchor="middle" class="graph-axis-label">${xLabel}</text>
+        <text x="12" y="${MT + plotH / 2}" text-anchor="middle" class="graph-axis-label" transform="rotate(-90 12 ${MT + plotH / 2})">${yLabel}</text>
+        ${seriesHTML}
+      </svg>
+    `;
+  }
+
+  // Animated marker moving along a 1D position line (e.g. displacement/distance).
+  function renderMotionSVG(visual, progress) {
+    const kfs = Array.isArray(visual.keyframes)
+      ? visual.keyframes.filter(k => typeof k.t === 'number' && typeof k.position === 'number').sort((a, b) => a.t - b.t)
+      : [];
+    if (kfs.length < 2) return '';
+    const W = 380, ML = 24, MR = 24, lineY = 42;
+    const positions = kfs.map(k => k.position);
+    let pMin = Math.min(0, ...positions), pMax = Math.max(0, ...positions);
+    if (pMin === pMax) pMax = pMin + 1;
+    const sx = p => ML + ((p - pMin) / (pMax - pMin)) * (W - ML - MR);
+
+    let cur = kfs[0].position;
+    for (let i = 0; i < kfs.length - 1; i++) {
+      if (progress >= kfs[i].t && progress <= kfs[i + 1].t) {
+        const span = kfs[i + 1].t - kfs[i].t || 1;
+        cur = kfs[i].position + (kfs[i + 1].position - kfs[i].position) * ((progress - kfs[i].t) / span);
+      }
+    }
+    if (progress >= kfs[kfs.length - 1].t) cur = kfs[kfs.length - 1].position;
+    const activeIdx = kfs.reduce((acc, k, i) => (progress >= k.t ? i : acc), 0);
+    const caption = kfs[activeIdx] ? kfs[activeIdx].caption : '';
+
+    const ticks = kfs.map(k => `<line x1="${sx(k.position).toFixed(1)}" y1="${lineY - 6}" x2="${sx(k.position).toFixed(1)}" y2="${lineY + 6}" stroke="rgba(239,231,216,0.25)" stroke-width="1" />`).join('');
+    const startX = sx(0).toFixed(1);
+    const markerX = sx(cur).toFixed(1);
+
+    let summary = '';
+    if (progress >= 0.999) {
+      const net = kfs[kfs.length - 1].position - kfs[0].position;
+      let dist = 0;
+      for (let i = 1; i < kfs.length; i++) dist += Math.abs(kfs[i].position - kfs[i - 1].position);
+      const unit = escapeHTML(visual.unitLabel || '');
+      summary = `<div class="motion-summary">Net displacement: ${net} ${unit} · Distance covered: ${dist} ${unit}</div>`;
+    }
+
+    return `
+      <svg viewBox="0 0 ${W} 70" class="motion-svg">
+        <line x1="${ML}" y1="${lineY}" x2="${W - MR}" y2="${lineY}" stroke="rgba(239,231,216,0.3)" stroke-width="1.5" />
+        <line x1="${startX}" y1="${lineY - 10}" x2="${startX}" y2="${lineY + 10}" stroke="rgba(201,163,78,0.6)" stroke-width="1.5" />
+        <text x="${startX}" y="${lineY + 24}" text-anchor="middle" class="graph-axis-label">start</text>
+        ${ticks}
+        <circle cx="${markerX}" cy="${lineY}" r="6" fill="#c9a34e" />
+        <line x1="${markerX}" y1="${lineY + 8}" x2="${markerX}" y2="66" stroke="#c9a34e" stroke-width="1" stroke-dasharray="2,2" opacity="0.6" />
+      </svg>
+      <div class="motion-caption">${renderMathText(caption)}</div>
+      ${summary}
+    `;
+  }
+
+  function toggleNarration(segment) {
+    if (!window.speechSynthesis) { alert('Speech synthesis is not supported in this browser.'); return; }
+    const playBtn = document.getElementById('play-btn');
+    const setLabel = (text) => { if (playBtn) playBtn.textContent = text; };
+
+    if (state.speaking && !state.paused) {
+      speechSynthesis.pause();
+      state.paused = true;
+      setLabel('▶ Resume');
+      return;
+    }
+    if (state.paused) {
+      speechSynthesis.resume();
+      state.paused = false;
+      setLabel('⏸ Pause');
+      return;
+    }
+
+    speechSynthesis.cancel();
+    state.playProgress = 0;
+    const utter = new SpeechSynthesisUtterance(segment.narration);
+    const voice = state.voices.find(v => v.name === state.selectedVoiceName);
+    if (voice) utter.voice = voice;
+    utter.rate = 0.96;
+    utter.pitch = 1.02;
+    utter.onend = () => {
+      state.speaking = false; state.paused = false; stopSegmentPlayback();
+      state.playProgress = 1; renderBoard(segment);
+      setLabel('▶ Play walkthrough');
+    };
+    utter.onerror = () => { state.speaking = false; state.paused = false; stopSegmentPlayback(); };
+    speechSynthesis.speak(utter);
+    state.speaking = true; state.paused = false;
+    startSegmentPlayback(segment);
+    setLabel('⏸ Pause');
+  }
+  function stopNarration() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    stopSegmentPlayback();
+    state.speaking = false; state.paused = false; state.playProgress = 0;
+  }
+  function populateVoiceSelect() {
+    const sel = document.getElementById('voice-select');
+    if (!sel) return;
+    const list = filteredVoices();
+    sel.innerHTML = list.map(v => `<option value="${escapeHTML(v.name)}" ${v.name === state.selectedVoiceName ? 'selected' : ''}>${escapeHTML(v.name)} (${escapeHTML(v.lang)})</option>`).join('') || `<option>No voices found on this device</option>`;
+  }
+
+  // ---------- tab nav ----------
+  function renderTabNav() { document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === state.view)); }
+
+  function renderApp() {
+    renderScoreboard();
+    renderTabNav();
+    const view = document.getElementById('view');
+    if (state.view === 'overview') renderOverview(view);
+    else if (state.view === 'lesson') renderLesson(view);
+    else if (state.view === 'timetable') renderTimetable(view);
+    else if (state.view === 'orbit') renderOrbit(view);
+  }
+
+  // ---------- overview tab ----------
+  function renderOverview(view) {
+    const hasAny = state.materials.length > 0;
+    const pendingCount = state.materials.filter(m => !m.lesson).length;
+    const generatedCount = state.materials.length - pendingCount;
+
+    view.innerHTML = `
+      <div class="upload-panel">
+        <h2>Today's materials <span class="count">${state.materials.length}/5</span></h2>
+        <p class="hint">Add up to 5 things you want to learn today. PDF and pasted text/notes work now — video and audio are coming soon.</p>
+        ${state.materials.length < 5 ? `
+          <input type="text" id="mat-title" placeholder="e.g. H2 Maths – Differentiation" />
+          <textarea id="mat-text" rows="5" placeholder="Paste your notes here..."></textarea>
+          <div class="upload-actions">
+            <label class="file-btn">📄 Upload PDF/.txt/.md<input type="file" id="mat-file" accept=".pdf,.txt,.md" style="display:none" /></label>
+            <button type="button" class="file-btn disabled" title="Coming soon" disabled>🎬 Video (soon)</button>
+            <button type="button" class="file-btn disabled" title="Coming soon" disabled>🎙 Audio (soon)</button>
+            <button type="button" class="btn-primary" id="add-mat-btn">Add material</button>
+          </div>
+          <p class="error" id="mat-error"></p>
+        ` : `<p class="muted">You've hit today's limit of 5. Remove one below to add another.</p>`}
+      </div>
+
+      <div class="section-head"><h2>Your stack</h2><span class="count">${state.materials.length} added</span></div>
+      <div id="material-grid"></div>
+
+      ${hasAny ? `
+        <div class="build-bar">
+          ${pendingCount > 0 ? `
+            <button type="button" class="btn-primary" id="build-btn" ${state.building ? 'disabled' : ''}>${state.building ? (state.buildStatus || 'Building…') : `✨ Build today's plan (${pendingCount} left)`}</button>
+          ` : `<p class="muted">✓ All lessons are ready. Head to the Lesson tab.</p>`}
+          ${state.buildError ? `<p class="error">${escapeHTML(state.buildError)}</p>` : ''}
+        </div>
+      ` : ''}
+
+      ${generatedCount > 0 ? renderPlanSummaryHTML() : ''}
+
+      <div class="section-head"><h2>Settings</h2></div>
+      <div class="upload-panel">
+        <h2 style="font-size:1rem;">Anthropic API key</h2>
+        <p class="hint">Only needed to generate NEW lessons from your own materials — the sample lessons above work without one. Your key is stored only in this browser (localStorage) and sent only to Anthropic's API, never anywhere else.</p>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." value="${escapeHTML(state.apiKey)}" autocomplete="off" />
+        <div class="upload-actions">
+          <button type="button" class="btn-primary" id="save-key-btn">Save key</button>
+          ${state.apiKey ? `<button type="button" class="file-btn" id="clear-key-btn">Remove key</button>` : ''}
+          <span class="hint" id="key-status" style="margin:0;">${state.apiKey ? '✓ Key saved' : 'No key saved'}</span>
+        </div>
+        <p class="hint">Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener" style="color:var(--brass);">console.anthropic.com</a>.</p>
+      </div>
+    `;
+    renderMaterialGrid();
+    attachOverviewHandlers();
+  }
+
+  function renderPlanSummaryHTML() {
+    const ready = state.materials.filter(m => m.lesson);
+    const totalSegments = ready.reduce((s, m) => s + m.lesson.segments.length, 0);
+    const totalPossible = ready.reduce((sum, m) => {
+      const segMax = m.lesson.segments.reduce((s, seg) => s + seg.quiz.length * POINTS.segCorrect, 0);
+      const finalMax = m.lesson.finalQuiz.questions.length * POINTS.finalCorrect + POINTS.completeBonus;
+      return sum + segMax + finalMax;
+    }, 0);
+    return `
+      <div class="section-head"><h2>Today's plan</h2></div>
+      <div class="plan-card">
+        <p class="muted">${new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+        ${ready.map(m => `<div class="plan-item"><h3>${escapeHTML(m.title)}</h3><p>${escapeHTML(m.lesson.overview)}</p></div>`).join('')}
+        <p class="muted">${totalSegments} segments today · up to ${totalPossible} stars possible</p>
+      </div>
+    `;
+  }
+
+  function renderMaterialGrid() {
+    const grid = document.getElementById('material-grid');
+    if (state.materials.length === 0) { grid.innerHTML = `<p class="empty-note">No materials yet. Add your first one above.</p>`; return; }
+    grid.className = 'notebook-grid';
+    grid.innerHTML = state.materials.map(m => `
+      <div class="notebook-card ${m.lesson ? '' : 'nb-pending'}" data-id="${m.id}">
+        <button type="button" class="nb-delete" data-delete="${m.id}" aria-label="Remove">✕</button>
+        <div class="nb-meta">${m.lesson ? '✓ Lesson ready' : 'Not generated yet'}</div>
+        <h3>${escapeHTML(m.title)}</h3>
+        <p>${escapeHTML(m.content.slice(0, 120))}${m.content.length > 120 ? '…' : ''}</p>
+      </div>
+    `).join('');
+  }
+
+  function attachOverviewHandlers() {
+    const addBtn = document.getElementById('add-mat-btn'); if (addBtn) addBtn.onclick = handleAddMaterial;
+    const fileInput = document.getElementById('mat-file'); if (fileInput) fileInput.onchange = handleMaterialFile;
+    const buildBtn = document.getElementById('build-btn'); if (buildBtn) buildBtn.onclick = buildToday;
+    document.getElementById('material-grid').addEventListener('click', (e) => {
+      const del = e.target.closest('[data-delete]');
+      if (del) { e.stopPropagation(); removeMaterial(del.dataset.delete).then(renderApp); return; }
+      const card = e.target.closest('.notebook-card');
+      if (card) {
+        const m = state.materials.find(x => x.id === card.dataset.id);
+        if (m && m.lesson) { state.activeMaterialId = m.id; state.view = 'lesson'; renderApp(); }
+      }
+    });
+    const saveKeyBtn = document.getElementById('save-key-btn');
+    if (saveKeyBtn) saveKeyBtn.onclick = async () => {
+      const val = document.getElementById('api-key-input').value.trim();
+      state.apiKey = val;
+      await storageSet('api-key', val);
+      renderOverview(document.getElementById('view'));
+    };
+    const clearKeyBtn = document.getElementById('clear-key-btn');
+    if (clearKeyBtn) clearKeyBtn.onclick = async () => {
+      state.apiKey = '';
+      await storageDelete('api-key');
+      renderOverview(document.getElementById('view'));
+    };
+  }
+
+  async function handleAddMaterial() {
+    const title = document.getElementById('mat-title').value.trim();
+    const text = document.getElementById('mat-text').value.trim();
+    const errEl = document.getElementById('mat-error');
+    if (!text) { errEl.textContent = 'Paste some text or upload a file first.'; return; }
+    await addMaterial({ title, content: text });
+    renderOverview(document.getElementById('view'));
+  }
+
+  async function handleMaterialFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const errEl = document.getElementById('mat-error');
+    errEl.textContent = 'Reading file…';
+    try {
+      let text;
+      if (file.name.toLowerCase().endsWith('.pdf')) text = await extractPdfText(file);
+      else text = await file.text();
+      document.getElementById('mat-text').value = text;
+      const titleEl = document.getElementById('mat-title');
+      if (!titleEl.value) titleEl.value = file.name.replace(/\.[^.]+$/, '');
+      errEl.textContent = '';
+    } catch (err) {
+      errEl.textContent = "Couldn't read that PDF automatically — try pasting the text instead.";
+    }
+  }
+
+  // ---------- lesson tab ----------
+  function renderLesson(view) {
+    const ready = state.materials.filter(m => m.lesson);
+    if (ready.length === 0) { view.innerHTML = `<p class="empty-note">No lessons yet. Add materials and hit "Build today's plan" from the Overview tab.</p>`; return; }
+    if (!state.activeMaterialId || !ready.find(m => m.id === state.activeMaterialId)) state.activeMaterialId = ready[0].id;
+    const material = ready.find(m => m.id === state.activeMaterialId);
+
+    view.innerHTML = `
+      ${ready.length > 1 ? `<div class="subject-pills" id="subject-pills">${ready.map(m => `<button type="button" class="pill ${m.id === material.id ? 'active' : ''}" data-mat="${m.id}">${escapeHTML(m.title)}</button>`).join('')}</div>` : ''}
+      <div id="lesson-body"></div>
+    `;
+    if (ready.length > 1) {
+      document.getElementById('subject-pills').addEventListener('click', (e) => {
+        const btn = e.target.closest('.pill'); if (!btn) return;
+        stopNarration(); state.quizMode = null; state.quizRuntime = null;
+        state.activeMaterialId = btn.dataset.mat;
+        renderLesson(document.getElementById('view'));
+      });
+    }
+    renderLessonBody(material);
+  }
+
+  function renderLessonBody(material) {
+    const body = document.getElementById('lesson-body');
+    const segIdx = material.lesson.segments.findIndex(s => !s.completed);
+
+    if (segIdx === -1) {
+      if (!material.lesson.finalQuiz.completed) {
+        if (state.quizMode === 'final') renderFinalQuiz(body, material);
+        else renderFinalQuizIntro(body, material);
+      } else renderLessonComplete(body, material);
+      return;
+    }
+
+    const segment = material.lesson.segments[segIdx];
+    if (state.quizMode === 'segment' && state.quizSegmentId === segment.id) { renderSegmentQuiz(body, material, segment); return; }
+
+    body.innerHTML = `
+      <div class="segment-dots">${material.lesson.segments.map((s, i) => `<span class="segment-dot ${s.completed ? 'done' : (i === segIdx ? 'current' : '')}"></span>`).join('')}</div>
+      <div class="quiz-card">
+        <div class="quiz-topline"><span>Segment ${segIdx + 1} of ${material.lesson.segments.length}</span><span>${escapeHTML(material.title)}</span></div>
+        <h2 class="segment-label">${escapeHTML(segment.label)}</h2>
+        <div class="board" id="lesson-board"></div>
+        <div class="narration-controls">
+          <button type="button" class="btn-primary" id="play-btn">${state.speaking && !state.paused ? '⏸ Pause' : (state.paused ? '▶ Resume' : '▶ Play walkthrough')}</button>
+          <button type="button" class="file-btn" id="stop-btn">■ Stop</button>
+          <select id="voice-select" title="Narration voice"></select>
+        </div>
+        <button type="button" class="btn-primary" id="start-quiz-btn">Take segment quiz →</button>
+      </div>
+    `;
+    renderBoard(segment);
+    populateVoiceSelect();
+    document.getElementById('play-btn').onclick = () => toggleNarration(segment);
+    document.getElementById('stop-btn').onclick = () => { stopNarration(); renderLessonBody(material); };
+    document.getElementById('voice-select').onchange = (e) => { state.selectedVoiceName = e.target.value; };
+    document.getElementById('start-quiz-btn').onclick = () => {
+      stopNarration();
+      state.quizMode = 'segment'; state.quizSegmentId = segment.id; state.quizRuntime = { index: 0, selected: null, correctCount: 0 };
+      renderLessonBody(material);
+    };
+  }
+
+  function renderSegmentQuiz(body, material, segment) {
+    const rt = state.quizRuntime;
+    const q = segment.quiz[rt.index];
+    const choicesHTML = q.choices.map((c, i) => {
+      let cls = 'choice';
+      if (rt.selected !== null) { if (i === q.correctIndex) cls += ' correct'; else if (i === rt.selected) cls += ' wrong'; }
+      return `<button type="button" class="${cls}" data-choice="${i}" ${rt.selected !== null ? 'disabled' : ''}>${renderMathText(c)}</button>`;
+    }).join('');
+    body.innerHTML = `
+      <div class="quiz-card">
+        <div class="quiz-topline"><span>${escapeHTML(segment.label)} quiz — Q${rt.index + 1}/${segment.quiz.length}</span></div>
+        <p class="quiz-question">${renderMathText(q.question)}</p>
+        <div class="choices">${choicesHTML}</div>
+        ${rt.selected !== null ? `
+          <div class="feedback"><div class="xp-gain">${rt.selected === q.correctIndex ? `+${POINTS.segCorrect} stars` : `+${POINTS.segWrong} stars`}</div>${renderMathText(q.explanation)}</div>
+          <button type="button" class="btn-primary" id="next-q-btn">${rt.index + 1 < segment.quiz.length ? 'Next question' : 'Finish segment'}</button>
+        ` : ''}
+      </div>
+    `;
+    body.querySelectorAll('[data-choice]').forEach(btn => {
+      btn.onclick = () => {
+        if (rt.selected !== null) return;
+        rt.selected = Number(btn.dataset.choice);
+        if (rt.selected === q.correctIndex) rt.correctCount += 1;
+        renderSegmentQuiz(body, material, segment);
+      };
+    });
+    const nextBtn = document.getElementById('next-q-btn');
+    if (nextBtn) nextBtn.onclick = () => {
+      if (rt.index + 1 < segment.quiz.length) { rt.index += 1; rt.selected = null; renderSegmentQuiz(body, material, segment); }
+      else finishSegmentQuiz(material, segment);
+    };
+  }
+
+  async function finishSegmentQuiz(material, segment) {
+    const rt = state.quizRuntime;
+    const points = await recordSegmentQuiz(material, segment, rt.correctCount, segment.quiz.length);
+    state.quizMode = null; state.quizSegmentId = null; state.quizRuntime = null;
+    renderApp();
+    showPointsToast(points, 'Segment complete');
+  }
+
+  function renderFinalQuizIntro(body, material) {
+    body.innerHTML = `
+      <div class="quiz-card result">
+        <div class="result-label">All segments done</div>
+        <h2>Final check-in</h2>
+        <p class="muted">${material.lesson.finalQuiz.questions.length} questions covering everything in "${escapeHTML(material.title)}".</p>
+        <button type="button" class="btn-primary" id="start-final-btn">Take final quiz →</button>
+      </div>
+    `;
+    document.getElementById('start-final-btn').onclick = () => {
+      state.quizMode = 'final'; state.quizRuntime = { index: 0, selected: null, correctCount: 0 };
+      renderLessonBody(material);
+    };
+  }
+
+  function renderFinalQuiz(body, material) {
+    const rt = state.quizRuntime;
+    const questions = material.lesson.finalQuiz.questions;
+    const q = questions[rt.index];
+    const choicesHTML = q.choices.map((c, i) => {
+      let cls = 'choice';
+      if (rt.selected !== null) { if (i === q.correctIndex) cls += ' correct'; else if (i === rt.selected) cls += ' wrong'; }
+      return `<button type="button" class="${cls}" data-choice="${i}" ${rt.selected !== null ? 'disabled' : ''}>${renderMathText(c)}</button>`;
+    }).join('');
+    body.innerHTML = `
+      <div class="quiz-card">
+        <div class="quiz-topline"><span>Final quiz — Q${rt.index + 1}/${questions.length}</span></div>
+        <p class="quiz-question">${renderMathText(q.question)}</p>
+        <div class="choices">${choicesHTML}</div>
+        ${rt.selected !== null ? `
+          <div class="feedback"><div class="xp-gain">${rt.selected === q.correctIndex ? `+${POINTS.finalCorrect} stars` : `+${POINTS.finalWrong} stars`}</div>${renderMathText(q.explanation)}</div>
+          <button type="button" class="btn-primary" id="next-q-btn">${rt.index + 1 < questions.length ? 'Next question' : 'See results'}</button>
+        ` : ''}
+      </div>
+    `;
+    body.querySelectorAll('[data-choice]').forEach(btn => {
+      btn.onclick = () => {
+        if (rt.selected !== null) return;
+        rt.selected = Number(btn.dataset.choice);
+        if (rt.selected === q.correctIndex) rt.correctCount += 1;
+        renderFinalQuiz(body, material);
+      };
+    });
+    const nextBtn = document.getElementById('next-q-btn');
+    if (nextBtn) nextBtn.onclick = () => {
+      if (rt.index + 1 < questions.length) { rt.index += 1; rt.selected = null; renderFinalQuiz(body, material); }
+      else finishFinalQuiz(material);
+    };
+  }
+
+  async function finishFinalQuiz(material) {
+    const rt = state.quizRuntime;
+    const points = await recordFinalQuiz(material, rt.correctCount, material.lesson.finalQuiz.questions.length);
+    state.quizMode = null; state.quizRuntime = null;
+    renderApp();
+    showPointsToast(points, 'Lesson complete');
+  }
+
+  function renderLessonComplete(body, material) {
+    const fq = material.lesson.finalQuiz;
+    const pct = fq.score ? Math.round((fq.score.correct / fq.score.total) * 100) : 0;
+    body.innerHTML = `
+      <div class="quiz-card result">
+        <div class="result-label">Lesson complete</div>
+        <div class="result-pct">${pct}%</div>
+        <p class="muted">${escapeHTML(material.title)} is fully done. Nice work.</p>
+        <button type="button" class="btn-primary" id="goto-timetable-btn">View timetable</button>
+      </div>
+    `;
+    document.getElementById('goto-timetable-btn').onclick = () => { state.view = 'timetable'; renderApp(); };
+  }
+
+  // ---------- timetable tab ----------
+  function renderTimetable(view) {
+    const ready = state.materials.filter(m => m.lesson);
+    if (ready.length === 0) { view.innerHTML = `<p class="empty-note">Nothing scheduled yet. Build today's plan from the Overview tab first.</p>`; return; }
+    let totalItems = 0, doneItems = 0;
+    ready.forEach(m => { totalItems += m.lesson.segments.length + 1; doneItems += m.lesson.segments.filter(s => s.completed).length + (m.lesson.finalQuiz.completed ? 1 : 0); });
+    const pct = totalItems ? Math.round((doneItems / totalItems) * 100) : 0;
+    view.innerHTML = `
+      <div class="section-head"><h2>Today's timetable</h2><span class="count">${doneItems}/${totalItems} done</span></div>
+      <div class="level-progress-track"><div class="level-progress-fill" style="width:${pct}%"></div></div>
+      <div class="timetable-list" style="margin-top:16px;">${ready.map(m => timetableCardHTML(m)).join('')}</div>
+    `;
+  }
+
+  function timetableCardHTML(m) {
+    const segItems = m.lesson.segments.map((s, i) => `
+      <li class="${s.completed ? 'done' : ''}">
+        <span class="check">${s.completed ? '✓' : '○'}</span>
+        <span class="tt-label">Segment ${i + 1}: ${escapeHTML(s.label)}</span>
+        <span class="tt-pts">${s.completed ? `${s.pointsEarned}/${s.quiz.length * POINTS.segCorrect} pts` : `${s.quiz.length * POINTS.segCorrect} pts possible`}</span>
+      </li>
+    `).join('');
+    const fq = m.lesson.finalQuiz;
+    const finalMax = fq.questions.length * POINTS.finalCorrect + POINTS.completeBonus;
+    const finalItem = `
+      <li class="${fq.completed ? 'done' : ''}">
+        <span class="check">${fq.completed ? '✓' : '○'}</span>
+        <span class="tt-label">Final quiz</span>
+        <span class="tt-pts">${fq.completed ? `${fq.pointsEarned}/${finalMax} pts` : `${finalMax} pts possible`}</span>
+      </li>
+    `;
+    return `<div class="timetable-card"><h3>${escapeHTML(m.title)}</h3><ul class="checklist">${segItems}${finalItem}</ul></div>`;
+  }
+
+  // ---------- orbit tab ----------
+  function countryOptionsHTML(selected) {
+    return `<option value="">Select country</option>` + COUNTRIES.map(c => `<option value="${escapeHTML(c)}" ${c === selected ? 'selected' : ''}>${escapeHTML(c)}</option>`).join('');
+  }
+
+  function renderOrbit(view) {
+    view.innerHTML = `
+      <div class="section-head"><h2>Your constellation</h2></div>
+      <div class="orbit-path" id="constellation-map"></div>
+
+      <div class="section-head"><h2>Profile</h2></div>
+      <div class="profile-form">
+        <input type="text" id="orbit-name" placeholder="Display name" value="${escapeHTML(state.profile.displayName)}" />
+        <select id="orbit-country">${countryOptionsHTML(state.profile.country)}</select>
+        <button type="button" class="btn-primary" id="orbit-save-btn">Save &amp; join leaderboard</button>
+      </div>
+      ${!state.profile.displayName ? `<p class="hint">Set a name and country to appear on the leaderboard.</p>` : ''}
+
+      <div class="section-head"><h2>Leaderboard</h2></div>
+      <div class="lb-tabs">
+        <button type="button" class="pill ${state.lbView !== 'country' ? 'active' : ''}" id="lb-global-btn">🌍 Global</button>
+        <button type="button" class="pill ${state.lbView === 'country' ? 'active' : ''}" id="lb-country-btn">📍 My country</button>
+      </div>
+      <div id="leaderboard-list"></div>
+
+      <p style="margin-top:30px;"><button type="button" class="file-btn" id="reset-btn">Reset my progress</button></p>
+    `;
+    renderConstellationMap();
+    attachOrbitHandlers();
+    loadLeaderboard();
+  }
+
+  function renderConstellationMap() {
+    const el = document.getElementById('constellation-map');
+    const points = state.profile.totalPoints;
+    el.innerHTML = CONSTELLATIONS.map((c, i) => {
+      const unlocked = points >= c.threshold;
+      const current = unlocked && (i === CONSTELLATIONS.length - 1 || points < CONSTELLATIONS[i + 1].threshold);
+      return `
+        <div class="path-stop ${i % 2 === 0 ? 'stop-left' : 'stop-right'}">
+          <div class="const-node ${unlocked ? 'unlocked' : 'locked'} ${current ? 'current' : ''}">
+            ${constellationSVG(c.name, unlocked, current)}
+            <div class="const-name">${escapeHTML(c.name)}</div>
+            <div class="const-threshold">${c.threshold}+ stars</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  let resetArmed = false;
+  function attachOrbitHandlers() {
+    document.getElementById('orbit-save-btn').onclick = async () => {
+      state.profile.displayName = document.getElementById('orbit-name').value.trim();
+      state.profile.country = document.getElementById('orbit-country').value;
+      await saveProfile(); await syncLeaderboard();
+      renderOrbit(document.getElementById('view'));
+    };
+    document.getElementById('lb-global-btn').onclick = () => { state.lbView = 'global'; renderOrbit(document.getElementById('view')); };
+    document.getElementById('lb-country-btn').onclick = () => { state.lbView = 'country'; renderOrbit(document.getElementById('view')); };
+    const resetBtn = document.getElementById('reset-btn');
+    resetBtn.onclick = () => {
+      if (!resetArmed) { resetArmed = true; resetBtn.textContent = 'Click again to confirm reset'; setTimeout(() => { resetArmed = false; resetBtn.textContent = 'Reset my progress'; }, 4000); }
+      else resetProgress();
+    };
+  }
+
+  async function resetProgress() {
+    for (const m of state.materials) await storageDelete(`material:${m.id}`);
+    await storageDelete('materials-order');
+    await storageDelete('profile');
+    await storageDelete(`leaderboard:${state.userId}`, true);
+    location.reload();
+  }
+
+  async function loadLeaderboard() {
+    const listEl = document.getElementById('leaderboard-list');
+    // This standalone build has no shared backend, so there's no real
+    // multi-user leaderboard to fetch - showing fake entries would be
+    // dishonest. Show the visitor's own local stats instead, with a clear
+    // note about what's needed to make this genuinely live.
+    if (!state.profile.displayName) {
+      listEl.innerHTML = `<p class="empty-note">Set a name above to see your local stats here.</p>`;
+      return;
+    }
+    listEl.innerHTML = `
+      <ol class="lb-list">
+        <li class="me">
+          <span class="lb-rank">#1</span>
+          <span class="lb-name">${escapeHTML(state.profile.displayName)} (you)</span>
+          <span class="lb-country">${escapeHTML(state.profile.country || '')}</span>
+          <span class="lb-pts">${state.profile.totalPoints} ⭐</span>
+        </li>
+      </ol>
+      <p class="hint" style="margin-top:10px;">This standalone build has no shared backend, so this shows only your own local stats. A live global/country leaderboard needs a real server to pool scores across visitors.</p>
+    `;
+  }
+
+  // ---------- init ----------
+  async function initApp() {
+    try {
+      state.userId = await storageGet('user-id');
+      if (!state.userId) { state.userId = crypto.randomUUID(); await storageSet('user-id', state.userId); }
+      state.apiKey = (await storageGet('api-key')) || '';
+      state.profile = (await storageGet('profile')) || defaultProfile();
+      const seeded = await storageGet('seeded');
+      let order = (await storageGet('materials-order')) || [];
+      if (!seeded && order.length === 0) {
+        // First visit: preload sample lessons so the app is explorable with
+        // zero setup - no API key required to see how it all works.
+        for (const m of SAMPLE_MATERIALS) await storageSet(`material:${m.id}`, m);
+        order = SAMPLE_MATERIALS.map(m => m.id);
+        await storageSet('materials-order', order);
+        await storageSet('seeded', true);
+      }
+      const loaded = [];
+      for (const id of order) { const m = await storageGet(`material:${id}`); if (m) loaded.push(m); }
+      state.materials = loaded;
+    } catch (e) {
+      console.error('init failed, continuing without persistence', e);
+      state.userId = state.userId || 'local';
+      state.profile = state.profile || defaultProfile();
+      if (state.materials.length === 0) state.materials = JSON.parse(JSON.stringify(SAMPLE_MATERIALS));
+    }
+    initVoices();
+    renderApp();
+  }
+
+  document.getElementById('tab-nav').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-btn'); if (!btn) return;
+    if (state.view === 'lesson') stopNarration();
+    state.view = btn.dataset.tab;
+    renderApp();
+  });
+
+  initDigits();
+  initApp();
+</script>
+</body>
+</html>
