@@ -4,7 +4,7 @@ A gamified study platform prototype: upload your notes, get a fully narrated,
 segmented lesson with content-aware diagrams, take quizzes as you go, and
 level up through a constellation-themed progress map.
 
-**[Try the live demo →](#)** *(replace this with your GitHub Pages link once enabled — see below)*
+**[Try the live demo →](https://praharshita77-dotcom.github.io/the-orbit/)**
 
 Comes preloaded with two full sample lessons (H2 Physics — kinematics, and
 H2 Chemistry — bonding) so you can explore everything immediately, with no
