@@ -24,31 +24,12 @@ words.
 ## Generating new lessons
 
 The two sample lessons work out of the box. To generate a lesson from your
-**own** notes, add your Anthropic API key under **Settings** on the Overview
+**own** notes, add an Anthropic API key under **Settings** on the Overview
 tab. Get one at [console.anthropic.com](https://console.anthropic.com).
 
-Your key is stored only in your browser (`localStorage`) and is sent only to
+The key is stored only in the browser (`localStorage`) and is sent only to
 Anthropic's API when generating a lesson — never anywhere else, and never
 committed to this repo.
-
-## Running it yourself
-
-No build step — it's a single static HTML file.
-
-```bash
-git clone <your-repo-url>
-cd <repo>
-# then just open index.html in a browser, or serve it:
-python3 -m http.server 8000
-```
-
-## Deploying to GitHub Pages
-
-1. Push this repo to GitHub (see below if you haven't yet).
-2. In the repo, go to **Settings → Pages**.
-3. Under **Build and deployment**, set **Source** to `Deploy from a branch`, branch `main`, folder `/ (root)`.
-4. Save. Your live demo will be at `https://<your-username>.github.io/<repo-name>/`.
-5. Come back and drop that link into this README where it says "Try the live demo".
 
 ## Tech
 
@@ -59,13 +40,34 @@ Single-file HTML/CSS/JS — no build step, no framework. Uses:
 - The Anthropic API (`claude-sonnet-5`) for lesson generation, called directly from the browser using Anthropic's documented ["bring your own key" CORS support](https://simonwillison.net/2024/Aug/23/anthropic-dangerous-direct-browser-access/)
 - `localStorage` for progress persistence (materials, points, streaks)
 
-## Known limitations of this standalone build
+## For developers
 
-- **No shared/global leaderboard.** The Orbit tab's leaderboard shows only
-  your own local stats — a real multi-user leaderboard needs a backend
-  server to pool scores across visitors, which a static GitHub Pages site
-  doesn't have.
+### Running it locally
+
+No build step — it's a single static HTML file.
+
+```bash
+git clone https://github.com/praharshita77-dotcom/the-orbit.git
+cd the-orbit
+# open index.html directly in a browser, or serve it:
+python3 -m http.server 8000
+```
+
+### Deploying your own copy
+
+This is a static site with no backend, so hosting it is just a matter of
+serving the files. To deploy on GitHub Pages:
+
+1. Fork or clone this repo.
+2. Go to **Settings → Pages**.
+3. Under **Build and deployment**, set **Source** to `Deploy from a branch`, branch `main`, folder `/ (root)`.
+4. Save — GitHub publishes it at `https://<your-username>.github.io/<repo-name>/` within a minute or two.
+
+## Limitations
+
+- **No shared/global leaderboard.** The Orbit tab shows local stats only —
+  a real multi-user leaderboard needs a backend server to pool scores across
+  visitors, which a static site doesn't have.
 - **Video/audio uploads** are shown in the UI but not yet implemented — only
   PDF and pasted text work.
-- Each visitor's progress is local to their own browser; clearing site data
-  resets it.
+- Progress is local to each visitor's browser; clearing site data resets it.
